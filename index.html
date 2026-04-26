@@ -146,12 +146,13 @@
       position: sticky; top: 0; z-index: 30;
     }
 
-    /* Tab bar */
+    /* Tab bar — absolute so it stays pinned to phone frame regardless of content length */
     .tabbar {
-      position: sticky; bottom: 0;
+      position: absolute; left: 0; right: 0; bottom: 0;
       background: white; border-top: 1px solid var(--c-border);
       padding: 10px 8px 14px;
       display: grid; grid-template-columns: repeat(4, 1fr);
+      z-index: 40;
     }
     .tab { display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 6px 0; color: var(--c-dim); font-size: 10.5px; font-weight: 600; }
     .tab.active { color: var(--c-purple); }
@@ -239,6 +240,418 @@
     /* hide scrollbars on screens by default */
     .screen { scrollbar-width: none; }
     .screen::-webkit-scrollbar { display: none; }
+
+    /* ============ NEW: BRAND LOGO ============ */
+    .logo-mark {
+      display: inline-flex; align-items: center; gap: 8px;
+      text-decoration: none; cursor: pointer;
+    }
+    .logo-glyph {
+      width: 32px; height: 32px; border-radius: 9px;
+      background: linear-gradient(135deg, #7C3AED 0%, #5B21B6 100%);
+      display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 2px 0 rgba(0,0,0,0.05), 0 6px 14px rgba(91,33,182,0.35);
+      position: relative;
+    }
+    .logo-glyph::after {
+      content: ""; position: absolute; right: -3px; top: -3px;
+      width: 10px; height: 10px; border-radius: 50%;
+      background: var(--c-lime); box-shadow: 0 0 0 2px white;
+    }
+    .logo-word {
+      font-family: 'Fraunces', Georgia, serif; font-weight: 900;
+      font-size: 20px; letter-spacing: -0.025em; color: var(--c-ink);
+      line-height: 1;
+    }
+    .logo-word .ya { color: var(--c-coral); }
+    .logo-word .bang { color: var(--c-purple); margin-left: 1px; }
+
+    /* ============ NEW: GAMIFICATION HEADER ============ */
+    .stat-pill {
+      display: inline-flex; align-items: center; gap: 5px;
+      padding: 5px 9px; border-radius: 999px;
+      background: white; border: 1px solid var(--c-border);
+      font-size: 11px; font-weight: 800; color: var(--c-ink);
+      font-variant-numeric: tabular-nums;
+    }
+    .stat-pill.streak {
+      background: linear-gradient(135deg, #FFB627 0%, #FF6A00 100%);
+      color: white; border-color: transparent;
+      box-shadow: 0 4px 12px rgba(255,106,0,0.25);
+    }
+    .stat-pill.level {
+      background: linear-gradient(135deg, #C8FF00 0%, #9BD400 100%);
+      color: var(--c-ink); border-color: transparent;
+      box-shadow: 0 4px 12px rgba(155,212,0,0.3);
+    }
+    .stat-pill.coin {
+      background: var(--c-ink); color: var(--c-lime); border-color: transparent;
+    }
+
+    /* XP progress mini-bar */
+    .xp-track { height: 4px; background: rgba(20,8,50,0.08); border-radius: 99px; overflow: hidden; }
+    .xp-track > span { display: block; height: 100%; background: linear-gradient(90deg, var(--c-purple), var(--c-coral)); }
+
+    /* ============ NEW: HERO FEATURED SALA ============ */
+    .hero {
+      margin: 4px 16px 12px; border-radius: 22px; padding: 16px 16px 14px;
+      background:
+        radial-gradient(circle at 90% 0%, rgba(200,255,0,0.18) 0%, transparent 55%),
+        linear-gradient(135deg, #1A0F2E 0%, #2D1450 60%, #5B21B6 100%);
+      color: white; position: relative; overflow: hidden;
+      box-shadow: 0 10px 26px rgba(20,8,50,0.18);
+      cursor: pointer;
+    }
+    .hero::before {
+      content: ""; position: absolute; right: -30px; bottom: -30px;
+      width: 160px; height: 160px; border-radius: 50%;
+      background: radial-gradient(circle, rgba(225,29,72,0.35) 0%, transparent 70%);
+    }
+    .hero-tag {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 4px 10px; border-radius: 99px;
+      background: var(--c-lime); color: var(--c-ink);
+      font-size: 10.5px; font-weight: 900; letter-spacing: 0.06em; text-transform: uppercase;
+    }
+
+    /* ============ NEW: SALA AVATAR ICONS ============ */
+    .sala-avatar {
+      width: 56px; height: 56px; flex: 0 0 56px;
+      border-radius: 16px; display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 4px 12px rgba(20,8,50,0.10);
+      position: relative; overflow: hidden;
+    }
+    .sala-avatar svg { width: 32px; height: 32px; }
+    .sala-avatar.av-politica  { background: linear-gradient(135deg, #7C3AED, #4C1D95); color: white; }
+    .sala-avatar.av-clima     { background: linear-gradient(135deg, #38BDF8, #0369A1); color: white; }
+    .sala-avatar.av-farandula { background: linear-gradient(135deg, #FB7185, #BE123C); color: white; }
+    .sala-avatar.av-cripto    { background: linear-gradient(135deg, #FBBF24, #D97706); color: white; }
+    .sala-avatar.av-cultura   { background: linear-gradient(135deg, #F472B6, #BE185D); color: white; }
+    .sala-avatar.av-tech      { background: linear-gradient(135deg, #60A5FA, #1E40AF); color: white; }
+    .sala-avatar.av-eventos   { background: linear-gradient(135deg, #C084FC, #7E22CE); color: white; }
+
+    .sala-avatar .av-emoji {
+      font-size: 30px; line-height: 1; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.25));
+    }
+    .sala-avatar .av-tag {
+      position: absolute; bottom: 3px; right: 3px;
+      font-size: 8px; font-weight: 900; letter-spacing: 0.04em;
+      background: rgba(0,0,0,0.6); color: white;
+      padding: 1px 4px; border-radius: 4px;
+    }
+
+    /* ============ NEW: HOT BADGE on tiles ============ */
+    .hot-badge {
+      display: inline-flex; align-items: center; gap: 3px;
+      padding: 2px 7px; border-radius: 99px;
+      background: linear-gradient(135deg, #FF6A00, #FF2A6D);
+      color: white; font-size: 9.5px; font-weight: 900; letter-spacing: 0.04em;
+      text-transform: uppercase;
+      box-shadow: 0 2px 6px rgba(255,42,109,0.35);
+    }
+    .new-badge {
+      background: var(--c-lime); color: var(--c-ink); padding: 2px 7px; border-radius: 99px;
+      font-size: 9.5px; font-weight: 900; letter-spacing: 0.04em; text-transform: uppercase;
+    }
+
+    /* ============ NEW: DAILY MISSION ============ */
+    .mission {
+      margin: 0 16px 12px; padding: 12px 14px;
+      border-radius: 16px;
+      background: linear-gradient(135deg, #FFFCF0 0%, #FEF7E0 100%);
+      border: 1.5px solid #F4D060;
+      display: flex; align-items: center; gap: 12px;
+    }
+    .mission-ring {
+      width: 38px; height: 38px; border-radius: 50%;
+      background: conic-gradient(#C8FF00 0% 66%, rgba(20,8,50,0.08) 66% 100%);
+      display: flex; align-items: center; justify-content: center;
+      flex: 0 0 38px;
+    }
+    .mission-ring > div {
+      width: 28px; height: 28px; border-radius: 50%;
+      background: white; display: flex; align-items: center; justify-content: center;
+      font-size: 16px;
+    }
+
+    /* ============ NEW: LIVE BETTING PULSE ============ */
+    .live-bet-pulse {
+      display: inline-flex; align-items: center; gap: 4px;
+      font-size: 10px; font-weight: 700; color: #BE123C;
+    }
+    .live-bet-pulse .dot {
+      width: 6px; height: 6px; border-radius: 50%; background: #BE123C;
+      animation: pulse-coral 1.4s infinite;
+    }
+    @keyframes pulse-coral {
+      0% { box-shadow: 0 0 0 0 rgba(190,18,60,0.6); }
+      70% { box-shadow: 0 0 0 6px rgba(190,18,60,0); }
+      100% { box-shadow: 0 0 0 0 rgba(190,18,60,0); }
+    }
+
+    /* ============ NEW: TILE upgrade ============ */
+    .tile { padding: 12px; }
+    .tile-row { display: flex; gap: 12px; align-items: stretch; }
+
+    /* ============ NEW: CONFETTI ============ */
+    .confetti-piece {
+      position: fixed; top: -20px; width: 9px; height: 14px; z-index: 200;
+      pointer-events: none; will-change: transform, opacity;
+    }
+    @keyframes confetti-fall {
+      0% { transform: translate3d(0,0,0) rotate(0deg); opacity: 1; }
+      100% { transform: translate3d(var(--tx, 0), 110vh, 0) rotate(720deg); opacity: 0; }
+    }
+
+    /* ============ NEW: ACHIEVEMENT TOAST ============ */
+    .achievement-toast {
+      position: fixed; left: 50%; transform: translate(-50%, -120%);
+      top: 24px; z-index: 250;
+      background: linear-gradient(135deg, #1A0F2E 0%, #5B21B6 100%);
+      color: white; padding: 12px 16px; border-radius: 16px;
+      box-shadow: 0 18px 40px rgba(20,8,50,0.4);
+      display: flex; align-items: center; gap: 12px;
+      transition: transform 380ms cubic-bezier(0.34, 1.56, 0.64, 1);
+      max-width: 92%; min-width: 260px;
+    }
+    .achievement-toast.show { transform: translate(-50%, 0); }
+    .achievement-toast .ach-icon {
+      width: 40px; height: 40px; border-radius: 12px;
+      background: var(--c-lime); display: flex; align-items: center;
+      justify-content: center; font-size: 22px; flex: 0 0 40px;
+    }
+
+    /* ============ NEW: HERO countdown chip ============ */
+    .hero-clock {
+      display: inline-flex; align-items: center; gap: 5px;
+      background: rgba(255,255,255,0.12); padding: 4px 10px; border-radius: 99px;
+      font-size: 11px; font-weight: 700; backdrop-filter: blur(8px);
+    }
+
+    /* ============ NEW: FAB (quick play) ============ */
+    .fab {
+      position: absolute; right: 16px; bottom: 80px; z-index: 25;
+      width: 58px; height: 58px; border-radius: 18px;
+      background: linear-gradient(135deg, #C8FF00 0%, #9BD400 100%);
+      box-shadow: 0 12px 30px rgba(155,212,0,0.5);
+      display: flex; align-items: center; justify-content: center;
+      animation: fab-bob 2.6s ease-in-out infinite;
+      cursor: pointer;
+    }
+    @keyframes fab-bob {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-4px); }
+    }
+
+    /* ============ BIG ILLUSTRATED TILE (Lotobola energy) ============ */
+    .big-tile {
+      position: relative; border-radius: 22px; overflow: hidden;
+      padding: 14px 16px 16px;
+      display: flex; align-items: center; gap: 12px;
+      cursor: pointer;
+      box-shadow: 0 8px 22px rgba(20,8,50,0.14), 0 2px 0 rgba(0,0,0,0.04);
+      border: 3px solid white;
+      transition: transform 140ms ease, box-shadow 140ms ease;
+    }
+    .big-tile:active { transform: scale(0.985); }
+    .big-tile::after {
+      content: ""; position: absolute; inset: 0;
+      background: radial-gradient(circle at 80% 110%, rgba(255,255,255,0.18) 0%, transparent 55%);
+      pointer-events: none;
+    }
+    .big-tile-char {
+      flex: 0 0 92px; width: 92px; height: 92px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 64px; line-height: 1;
+      filter: drop-shadow(0 4px 8px rgba(0,0,0,0.28));
+      position: relative; z-index: 2;
+    }
+    .big-tile-body { flex: 1; min-width: 0; color: white; position: relative; z-index: 2; }
+    .big-tile-cat {
+      display: inline-block;
+      background: rgba(255,255,255,0.22); backdrop-filter: blur(6px);
+      color: white; padding: 3px 9px; border-radius: 99px;
+      font-size: 10px; font-weight: 900; letter-spacing: 0.08em;
+      text-transform: uppercase; margin-bottom: 6px;
+    }
+    .big-tile-q {
+      font-family: 'Fraunces', Georgia, serif; font-weight: 900;
+      font-size: 18px; line-height: 1.06; letter-spacing: -0.02em;
+      text-shadow: 0 2px 6px rgba(0,0,0,0.22);
+    }
+    .big-tile-stake {
+      position: absolute; left: 12px; bottom: 10px; z-index: 3;
+      background: var(--c-ink); color: var(--c-lime);
+      padding: 4px 11px; border-radius: 99px;
+      font-size: 11px; font-weight: 900; letter-spacing: 0.04em;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+    }
+    .big-tile-odds {
+      position: absolute; right: 44px; bottom: 10px; z-index: 3;
+      background: rgba(255,255,255,0.95); color: var(--c-ink);
+      padding: 4px 10px; border-radius: 99px;
+      font-size: 11px; font-weight: 900; font-variant-numeric: tabular-nums;
+      display: flex; align-items: center; gap: 5px;
+    }
+    .big-tile-odds .si-pct { color: #4D8800; }
+    .big-tile-odds .no-pct { color: var(--c-coral); }
+    .big-tile-info {
+      position: absolute; right: 12px; bottom: 8px; z-index: 3;
+      width: 28px; height: 28px; border-radius: 50%;
+      background: rgba(255,255,255,0.95); color: var(--c-purple);
+      display: flex; align-items: center; justify-content: center;
+      font-family: 'Fraunces', Georgia, serif; font-weight: 900;
+      font-size: 14px; font-style: italic;
+    }
+    .big-tile-clock {
+      position: absolute; top: 12px; right: 12px; z-index: 3;
+      background: rgba(0,0,0,0.4); color: white;
+      padding: 3px 9px; border-radius: 99px;
+      font-size: 10px; font-weight: 800; backdrop-filter: blur(8px);
+      display: inline-flex; align-items: center; gap: 4px;
+    }
+    .big-tile-hot {
+      position: absolute; top: 12px; left: 12px; z-index: 3;
+      background: linear-gradient(135deg, #FF2A6D 0%, #FF6A00 100%);
+      color: white; padding: 3px 9px; border-radius: 99px;
+      font-size: 10px; font-weight: 900; letter-spacing: 0.04em;
+      box-shadow: 0 4px 10px rgba(255,42,109,0.4);
+    }
+    .big-tile-live {
+      display: inline-flex; align-items: center; gap: 5px; flex-wrap: wrap;
+      margin-top: 6px;
+    }
+    .big-tile-live .live-badge {
+      background: rgba(0,0,0,0.35); color: white;
+      backdrop-filter: blur(6px);
+    }
+    .big-tile-live .live-badge .live-dot { background: white; }
+
+    /* Tropical / playful per-category gradients */
+    .bg-politica   { background: linear-gradient(135deg, #FF6A00 0%, #FFB627 55%, #FFD86E 100%); }
+    .bg-clima      { background: linear-gradient(135deg, #00B4DB 0%, #5CC9F2 50%, #FFE082 100%); }
+    .bg-farandula  { background: linear-gradient(135deg, #FF2A6D 0%, #FF6A00 60%, #FFD86E 100%); }
+    .bg-cripto     { background: linear-gradient(135deg, #F7931A 0%, #FFB627 50%, #FFE082 100%); }
+    .bg-cultura    { background: linear-gradient(135deg, #BE185D 0%, #FB7185 60%, #F9A8D4 100%); }
+    .bg-tech       { background: linear-gradient(135deg, #1E40AF 0%, #38BDF8 60%, #BAE6FD 100%); }
+    .bg-eventos    { background: linear-gradient(135deg, #7E22CE 0%, #C084FC 60%, #F9A8D4 100%); }
+
+    /* Featured (top) Sala — even taller hero card */
+    .featured-tile {
+      min-height: 168px;
+      padding-top: 18px;
+    }
+    .featured-tile .big-tile-char {
+      flex-basis: 116px; width: 116px; height: 116px; font-size: 86px;
+    }
+    .featured-tile .big-tile-q { font-size: 22px; }
+
+    /* Section label */
+    .section-label {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 6px 16px 10px;
+    }
+    .section-label h3 {
+      font-family: 'Fraunces', Georgia, serif; font-weight: 900;
+      font-size: 16px; letter-spacing: -0.01em;
+      display: flex; align-items: center; gap: 8px;
+    }
+    .section-label h3 .ribbon {
+      background: var(--c-lime); color: var(--c-ink);
+      padding: 2px 7px; border-radius: 4px;
+      font-size: 10.5px; font-weight: 900; letter-spacing: 0.06em; text-transform: uppercase;
+    }
+
+    /* Detail header tropical hero */
+    .detail-hero {
+      padding: 16px 18px 22px;
+      position: sticky; top: 0; z-index: 30;
+      color: white;
+    }
+    .detail-hero-icon {
+      width: 76px; height: 76px; border-radius: 22px;
+      background: rgba(255,255,255,0.18);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 56px; line-height: 1;
+      filter: drop-shadow(0 4px 8px rgba(0,0,0,0.25));
+      backdrop-filter: blur(8px);
+    }
+
+    /* SI / NO playful big buttons */
+    .btn-si, .btn-no {
+      position: relative; overflow: hidden;
+      transition: transform 100ms ease;
+    }
+    .btn-si { background: linear-gradient(135deg, #C8FF00 0%, #9BD400 100%); }
+    .btn-no { background: linear-gradient(135deg, #FF2A6D 0%, #BE123C 100%); }
+    .btn-si:active, .btn-no:active { transform: scale(0.96); }
+
+    /* Wallet pill animation when balance changes */
+    @keyframes coin-bump { 0%,100% { transform: scale(1);} 50% { transform: scale(1.18);} }
+    .coin-bump { animation: coin-bump 320ms ease; }
+
+    /* Filter pills brighter active */
+    .filter-pill.active {
+      background: linear-gradient(135deg, #1A0F2E 0%, #5B21B6 100%);
+      color: white; border-color: transparent;
+      box-shadow: 0 4px 12px rgba(91,33,182,0.3);
+    }
+
+    /* Achievement icon emoji big */
+    .achievement-toast .ach-text { font-size: 12.5px; line-height: 1.25; }
+    .achievement-toast .ach-text strong { display: block; font-family: 'Fraunces'; font-weight: 900; font-size: 14px; }
+
+    /* ============ NEW: PROBABILITY BAR (dominant side color) ============ */
+    .prob-bar-wrap {
+      position: relative; height: 9px; border-radius: 99px;
+      background: rgba(0,0,0,0.22);
+      overflow: hidden; margin-top: 8px;
+      box-shadow: inset 0 1px 2px rgba(0,0,0,0.18);
+    }
+    .prob-bar-fill {
+      height: 100%; border-radius: inherit;
+      transition: width 240ms ease;
+    }
+    .prob-bar-fill.si {
+      background: linear-gradient(90deg, #DAFF63 0%, #9BD400 100%);
+      box-shadow: 0 0 14px rgba(200,255,0,0.55);
+    }
+    .prob-bar-fill.no {
+      background: linear-gradient(90deg, #FF5C92 0%, #BE123C 100%);
+      box-shadow: 0 0 14px rgba(255,42,109,0.45);
+    }
+    .prob-row {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-top: 7px; gap: 10px;
+    }
+    .prob-label {
+      display: inline-flex; align-items: center; gap: 5px;
+      padding: 4px 10px; border-radius: 99px;
+      font-size: 10.5px; font-weight: 900; letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+    .prob-label.si {
+      background: linear-gradient(135deg, #DAFF63 0%, #9BD400 100%);
+      color: var(--c-ink);
+    }
+    .prob-label.no {
+      background: linear-gradient(135deg, #FF5C92 0%, #BE123C 100%);
+      color: white;
+    }
+    .prob-pct {
+      font-family: 'Fraunces', Georgia, serif; font-weight: 900;
+      font-size: 22px; line-height: 1; color: white;
+      text-shadow: 0 2px 6px rgba(0,0,0,0.35);
+      font-variant-numeric: tabular-nums;
+    }
+
+    /* Stake chip inline with category label */
+    .big-tile-cat .price-tag {
+      display: inline-block; margin-left: 6px;
+      background: rgba(0,0,0,0.4); color: white;
+      padding: 1px 7px; border-radius: 99px;
+      font-size: 9.5px; letter-spacing: 0.04em;
+    }
   </style>
 </head>
 <body>
@@ -247,44 +660,76 @@
     <!-- ============ SCREEN: HOME (Salas list) ============ -->
     <section class="screen" id="screen-home">
       <header class="topbar">
-        <div class="flex items-center justify-between mb-1">
+        <div class="flex items-center justify-between">
+          <a class="logo-mark" href="#">
+            <span class="logo-glyph">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                <path d="M6 4 L17 12 L6 20 Z" fill="#C8FF00"/>
+              </svg>
+            </span>
+            <span class="logo-word">Apuesta<span class="ya">Ya</span><span class="bang">!</span></span>
+          </a>
           <div class="flex items-center gap-2">
-            <span class="brand-mark">Apuesta<span class="ya">Ya</span><span class="bang">!</span></span>
-            <span class="chip" style="background: var(--c-purple-lo); color: var(--c-purple);">BETA</span>
-          </div>
-          <div class="flex items-center gap-3">
-            <button class="w-9 h-9 rounded-full bg-white border border-[--c-border] flex items-center justify-center" aria-label="Notificaciones">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 8a6 6 0 1 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>
-            </button>
-            <div class="text-right">
-              <div class="text-[10px] uppercase font-bold tracking-wider text-[--c-dim]">Saldo</div>
-              <div class="font-display text-[18px] leading-none">S/ <span id="balance">42.50</span></div>
-            </div>
+            <span class="stat-pill streak" title="Racha de 5 días">🔥 <span id="streak-count">5</span></span>
+            <span class="stat-pill coin" id="balance-pill">S/ <span id="balance">42.50</span></span>
           </div>
         </div>
-        <h1 class="font-display-tight text-[28px] leading-[1.05] mt-3">¿En qué crees<br>esta semana?</h1>
-        <p class="text-[13px] text-[--c-dim] mt-1">Salas curadas por Lotobola. 20 asientos. S/ 5–20 por reto.</p>
+
+        <div class="mt-3 flex items-center gap-3">
+          <span class="stat-pill level">⭐ Nivel <span id="level-num">7</span></span>
+          <div class="flex-1">
+            <div class="flex items-center justify-between text-[10px] font-bold text-[--c-dim] mb-1">
+              <span>XP <span id="xp-now">240</span> / <span id="xp-next">350</span></span>
+              <span>Pata Score · 1,240</span>
+            </div>
+            <div class="xp-track"><span id="xp-bar" style="width: 68%;"></span></div>
+          </div>
+        </div>
       </header>
 
-      <div class="filter-row" id="filter-row">
-        <button class="filter-pill active" data-cat="all">Todas</button>
-        <button class="filter-pill" data-cat="politica">Política</button>
-        <button class="filter-pill" data-cat="clima">Clima</button>
-        <button class="filter-pill" data-cat="farandula">Farándula</button>
-        <button class="filter-pill" data-cat="cripto">Cripto</button>
-        <button class="filter-pill" data-cat="cultura">Cultura</button>
-        <button class="filter-pill" data-cat="tech">Tech</button>
-        <button class="filter-pill" data-cat="eventos">Eventos</button>
+      <!-- Daily mission -->
+      <div class="mission" id="mission">
+        <div class="mission-ring"><div>🎯</div></div>
+        <div class="flex-1">
+          <div id="mission-label" class="text-[10.5px] font-bold uppercase tracking-wider text-[#9A6F00]">Misión del día · 2/3</div>
+          <div class="text-[13px] font-bold text-[--c-ink] leading-tight">Apuesta en 3 Salas hoy<br><span class="text-[11px] font-semibold text-[--c-dim]">Recompensa: +50 XP · 1 reto gratis</span></div>
+        </div>
+        <div class="font-display text-[15px] text-[--c-purple]">+50<br><span class="text-[10px] uppercase tracking-wider">XP</span></div>
       </div>
 
-      <div class="px-4 pb-2 flex items-center justify-between">
-        <div class="flex items-center gap-2 text-[11.5px] text-[--c-dim] font-semibold uppercase tracking-wider">
-          <span class="live-dot"></span> <span id="open-count">10</span> Salas abiertas
-        </div>
-        <button class="text-[11.5px] font-semibold text-[--c-purple] uppercase tracking-wider">Ordenar</button>
+      <!-- Hero featured Sala -->
+      <div class="section-label">
+        <h3>🌟 La del día <span class="ribbon">TOP</span></h3>
+        <span class="text-[11px] font-bold text-[--c-purple] uppercase tracking-wider">Cierra pronto</span>
+      </div>
+      <div class="px-4" id="hero-mount"></div>
+
+      <!-- Category filter -->
+      <div class="section-label" style="margin-top: 10px;">
+        <h3>🎲 Todas las Salas</h3>
+        <span class="text-[11px] font-bold text-[--c-purple] uppercase tracking-wider"><span id="open-count">10</span> abiertas</span>
+      </div>
+
+      <div class="filter-row" id="filter-row" style="padding-top: 0;">
+        <button class="filter-pill active" data-cat="all">🌎 Todas</button>
+        <button class="filter-pill" data-cat="politica">🗳️ Política</button>
+        <button class="filter-pill" data-cat="clima">🌦️ Clima</button>
+        <button class="filter-pill" data-cat="farandula">🎬 Farándula</button>
+        <button class="filter-pill" data-cat="cripto">₿ Cripto</button>
+        <button class="filter-pill" data-cat="cultura">🎤 Cultura</button>
+        <button class="filter-pill" data-cat="tech">📱 Tech</button>
+        <button class="filter-pill" data-cat="eventos">🎫 Eventos</button>
       </div>
 
       <div class="px-4 pb-28 grid gap-3" id="tile-grid"></div>
+
+      <!-- Quick-play FAB -->
+      <button class="fab" onclick="quickPlay()" aria-label="Reto rápido">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#1A0F2E" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M6 4 L17 12 L6 20 Z" fill="#1A0F2E"/>
+          <path d="M19 4v16M4 4h2M4 20h2" stroke="#1A0F2E" stroke-width="2.5"/>
+        </svg>
+      </button>
 
       <nav class="tabbar">
         <button class="tab active">
@@ -308,29 +753,30 @@
 
     <!-- ============ SCREEN: DETAIL (Sala) ============ -->
     <section class="screen hidden-screen" id="screen-detail">
-      <header class="topbar-detail">
-        <div class="flex items-center gap-3">
-          <button onclick="goHome()" class="w-9 h-9 rounded-full bg-white/15 flex items-center justify-center" aria-label="Volver">
+      <header class="detail-hero" id="detail-hero">
+        <div class="flex items-center gap-3 mb-3">
+          <button onclick="goHome()" class="w-9 h-9 rounded-full bg-white/20 flex items-center justify-center" aria-label="Volver">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.4"><path d="M15 18l-6-6 6-6"/></svg>
           </button>
           <div class="flex-1">
-            <div class="text-[10px] font-bold tracking-[0.18em] uppercase opacity-70" id="detail-cat">CATEGORÍA</div>
-            <div class="text-[12px] font-semibold opacity-90">Sala curada · Lotobola</div>
+            <div class="text-[10px] font-bold tracking-[0.18em] uppercase opacity-80" id="detail-cat">CATEGORÍA</div>
+            <div class="text-[11px] font-semibold opacity-80">Sala curada · Lotobola</div>
           </div>
-          <button class="w-9 h-9 rounded-full bg-white/15 flex items-center justify-center" onclick="alert('Demo: compartir por WhatsApp')" aria-label="Compartir">
+          <button class="w-9 h-9 rounded-full bg-white/20 flex items-center justify-center" onclick="alert('Demo: compartir por WhatsApp')" aria-label="Compartir">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.2"><path d="M4 12v8h16v-8"/><path d="M12 16V4M8 8l4-4 4 4"/></svg>
           </button>
         </div>
-      </header>
-
-      <div class="px-5 pt-4 pb-3 bg-[--c-purple] text-white">
-        <h2 class="font-display-tight text-[26px] leading-[1.1]" id="detail-question">¿Pregunta?</h2>
-        <div class="flex items-center gap-3 mt-3 text-[12px] opacity-90">
-          <span><span class="live-dot"></span> Cierra en <span id="detail-closes" class="font-bold">2h 14m</span></span>
-          <span class="opacity-50">·</span>
-          <span>Resuelto por <span id="detail-source" class="font-bold">ONPE</span></span>
+        <div class="flex items-center gap-3">
+          <div class="detail-hero-icon" id="detail-hero-icon">🎯</div>
+          <div class="flex-1 min-w-0">
+            <h2 class="font-display-tight text-[22px] leading-[1.1]" id="detail-question">¿Pregunta?</h2>
+            <div class="flex items-center gap-2 mt-2 text-[11px] flex-wrap">
+              <span class="hero-clock"><span class="live-dot"></span> Cierra en <span id="detail-closes" class="font-bold">2h 14m</span></span>
+              <span class="hero-clock">📡 <span id="detail-source" class="font-bold">ONPE</span></span>
+            </div>
+          </div>
         </div>
-      </div>
+      </header>
 
       <!-- Live odds card -->
       <div class="px-4 -mt-3">
@@ -496,19 +942,31 @@
 
   <div class="demo-pill">PROTOTIPO · LOTOBOLA × APUESTAYA</div>
 
+  <!-- Achievement toast (hidden until triggered) -->
+  <div class="achievement-toast" id="achievement-toast">
+    <div class="ach-icon" id="ach-icon">🏆</div>
+    <div class="ach-text">
+      <strong id="ach-title">¡Logro desbloqueado!</strong>
+      <span id="ach-desc">Primera apuesta colocada</span>
+    </div>
+  </div>
+
   <script>
     // ============ DATA ============
+    // Each Sala carries an emoji "character" + featured/hot flags so the home grid feels alive.
+    // (In production these become illustrated PNG/WEBP characters like Lotobola.com.pe; emojis are
+    //  the prototype stand-in — same structural slot in tileHTML.)
     const SALAS = [
-      { id: 'p1', cat: 'politica', catLabel: 'Política', q: '¿Aprueba el Congreso la reforma esta semana?', filled: 14, si: 7, no: 7, sourcePct: 35, source: 'ONPE', closesIn: '2h 14m', closesMs: 8040000 },
-      { id: 'c1', cat: 'clima',    catLabel: 'Clima',    q: '¿Llueve en Lima este fin de semana?',          filled: 9,  si: 6, no: 3, sourcePct: 60, source: 'SENAMHI', closesIn: '1d 4h', closesMs: 100800000, live: 'weather' },
-      { id: 'f1', cat: 'farandula',catLabel: 'Farándula',q: '¿Quién gana El Gran Chef esta noche?',           filled: 18, si: 10, no: 8, sourcePct: 55, source: 'Latina TV', closesIn: '38m', closesMs: 2280000 },
-      { id: 'b1', cat: 'cripto',   catLabel: 'Cripto',   q: '¿Cierra Bitcoin sobre US$ 80K el viernes?',     filled: 12, si: 8, no: 4, sourcePct: 67, source: 'CoinGecko', closesIn: '3d 6h', closesMs: 280800000, live: 'btc', strike: 80000 },
-      { id: 'm1', cat: 'cultura',  catLabel: 'Cultura',  q: '¿Bad Bunny anuncia gira 2026 en mayo?',         filled: 6,  si: 4, no: 2, sourcePct: 65, source: 'Spotify',   closesIn: '5d', closesMs: 432000000, live: 'wiki', wikiPage: 'Bad_Bunny', wikiLabel: 'Bad Bunny' },
-      { id: 't1', cat: 'tech',     catLabel: 'Tech',     q: '¿Apple presenta nuevo iPad esta semana?',       filled: 11, si: 7, no: 4, sourcePct: 64, source: 'Bloomberg', closesIn: '2d 8h', closesMs: 201600000 },
-      { id: 'e1', cat: 'eventos',  catLabel: 'Eventos',  q: '¿Mistura supera los 100K visitantes este año?', filled: 4,  si: 3, no: 1, sourcePct: 75, source: 'MINCETUR',  closesIn: '12d', closesMs: 1036800000 },
-      { id: 'p2', cat: 'politica', catLabel: 'Política', q: '¿Sube el dólar arriba de S/ 3.80 esta semana?', filled: 17, si: 11, no: 6, sourcePct: 65, source: 'BCR', closesIn: '4h 12m', closesMs: 15120000, live: 'fx', strike: 3.80 },
-      { id: 'f2', cat: 'farandula',catLabel: 'Farándula',q: '¿Eliminan a Pancho en Esto Es Guerra hoy?',     filled: 19, si: 9,  no: 10, sourcePct: 47, source: 'América TV', closesIn: '2h 30m', closesMs: 9000000 },
-      { id: 'p3', cat: 'politica', catLabel: 'Política', q: '¿Aprueba Boluarte > 10% en la próxima encuesta?',filled: 8, si: 2,  no: 6, sourcePct: 25, source: 'IEP',       closesIn: '6d', closesMs: 518400000 },
+      { id: 'p1', cat: 'politica', catLabel: 'Política', char: '🏛️', q: '¿Aprueba el Congreso la reforma esta semana?', filled: 14, si: 7, no: 7, sourcePct: 35, source: 'ONPE', closesIn: '2h 14m', closesMs: 8040000, hot: true, featured: false },
+      { id: 'c1', cat: 'clima',    catLabel: 'Clima',    char: '🌧️', q: '¿Llueve en Lima este fin de semana?',          filled: 9,  si: 6, no: 3, sourcePct: 60, source: 'SENAMHI', closesIn: '1d 4h', closesMs: 100800000, live: 'weather' },
+      { id: 'f1', cat: 'farandula',catLabel: 'Farándula',char: '🍳', q: '¿Quién gana El Gran Chef esta noche?',           filled: 18, si: 10, no: 8, sourcePct: 55, source: 'Latina TV', closesIn: '38m', closesMs: 2280000, hot: true },
+      { id: 'b1', cat: 'cripto',   catLabel: 'Cripto',   char: '₿', q: '¿Cierra Bitcoin sobre US$ 80K el viernes?',     filled: 12, si: 8, no: 4, sourcePct: 67, source: 'CoinGecko', closesIn: '3d 6h', closesMs: 280800000, live: 'btc', strike: 80000, featured: true },
+      { id: 'm1', cat: 'cultura',  catLabel: 'Cultura',  char: '🎤', q: '¿Bad Bunny anuncia gira 2026 en mayo?',         filled: 6,  si: 4, no: 2, sourcePct: 65, source: 'Spotify',   closesIn: '5d', closesMs: 432000000, live: 'wiki', wikiPage: 'Bad_Bunny', wikiLabel: 'Bad Bunny' },
+      { id: 't1', cat: 'tech',     catLabel: 'Tech',     char: '🍎', q: '¿Apple presenta nuevo iPad esta semana?',       filled: 11, si: 7, no: 4, sourcePct: 64, source: 'Bloomberg', closesIn: '2d 8h', closesMs: 201600000 },
+      { id: 'e1', cat: 'eventos',  catLabel: 'Eventos',  char: '🍴', q: '¿Mistura supera los 100K visitantes este año?', filled: 4,  si: 3, no: 1, sourcePct: 75, source: 'MINCETUR',  closesIn: '12d', closesMs: 1036800000 },
+      { id: 'p2', cat: 'politica', catLabel: 'Política', char: '💵', q: '¿Sube el dólar arriba de S/ 3.80 esta semana?', filled: 17, si: 11, no: 6, sourcePct: 65, source: 'BCR', closesIn: '4h 12m', closesMs: 15120000, live: 'fx', strike: 3.80, hot: true },
+      { id: 'f2', cat: 'farandula',catLabel: 'Farándula',char: '🥊', q: '¿Eliminan a Pancho en Esto Es Guerra hoy?',     filled: 19, si: 9,  no: 10, sourcePct: 47, source: 'América TV', closesIn: '2h 30m', closesMs: 9000000, hot: true },
+      { id: 'p3', cat: 'politica', catLabel: 'Política', char: '🗳️', q: '¿Aprueba Boluarte > 10% en la próxima encuesta?',filled: 8, si: 2,  no: 6, sourcePct: 25, source: 'IEP',       closesIn: '6d', closesMs: 518400000 },
     ];
 
     // ============ LIVE DATA (real public APIs, no key needed) ============
@@ -739,47 +1197,146 @@
     let selectedSide = null;
     let countdownInterval = null;
 
+    // ============ GAMIFICATION STATE ============
+    const game = {
+      streak: 5,
+      level: 7,
+      xp: 240,
+      xpNext: 350,
+      missionDone: 2,
+      missionGoal: 3,
+      betsPlaced: 0,
+      achievements: new Set(),
+    };
+
+    function paintGameStats() {
+      document.getElementById('streak-count').textContent = game.streak;
+      document.getElementById('level-num').textContent = game.level;
+      document.getElementById('xp-now').textContent = game.xp;
+      document.getElementById('xp-next').textContent = game.xpNext;
+      document.getElementById('xp-bar').style.width = Math.min(100, (game.xp / game.xpNext) * 100) + '%';
+      // Mission ring (66% = 2/3, 100% = done)
+      const pct = Math.min(100, Math.round((game.missionDone / game.missionGoal) * 100));
+      const ring = document.querySelector('.mission-ring');
+      if (ring) ring.style.background = `conic-gradient(#C8FF00 0% ${pct}%, rgba(20,8,50,0.08) ${pct}% 100%)`;
+      const missionLabel = document.getElementById('mission-label');
+      if (missionLabel) missionLabel.textContent = `Misión del día · ${game.missionDone}/${game.missionGoal}`;
+    }
+
+    function gainXP(amount) {
+      game.xp += amount;
+      while (game.xp >= game.xpNext) {
+        game.xp -= game.xpNext;
+        game.level += 1;
+        game.xpNext = Math.round(game.xpNext * 1.4);
+        showAchievement('⭐', '¡Subiste de nivel!', `Nivel ${game.level} desbloqueado · +S/ 2 bonus`);
+      }
+      paintGameStats();
+    }
+
+    // ============ ACHIEVEMENT TOAST ============
+    function showAchievement(icon, title, desc) {
+      const t = document.getElementById('achievement-toast');
+      document.getElementById('ach-icon').textContent = icon;
+      document.getElementById('ach-title').textContent = title;
+      document.getElementById('ach-desc').textContent = desc;
+      t.classList.add('show');
+      clearTimeout(showAchievement._t);
+      showAchievement._t = setTimeout(() => t.classList.remove('show'), 3200);
+    }
+
+    // ============ CONFETTI ============
+    function fireConfetti(intensity = 80) {
+      const colors = ['#C8FF00', '#7C3AED', '#FF2A6D', '#FFB627', '#38BDF8', '#FB7185'];
+      const shell = document.getElementById('shell');
+      const rect = shell.getBoundingClientRect();
+      for (let i = 0; i < intensity; i++) {
+        const piece = document.createElement('div');
+        piece.className = 'confetti-piece';
+        const startX = rect.left + Math.random() * rect.width;
+        piece.style.left = startX + 'px';
+        piece.style.background = colors[i % colors.length];
+        piece.style.borderRadius = Math.random() < 0.4 ? '50%' : '2px';
+        const tx = (Math.random() - 0.5) * 360 + 'px';
+        const dur = 1400 + Math.random() * 1400;
+        piece.style.setProperty('--tx', tx);
+        piece.style.animation = `confetti-fall ${dur}ms cubic-bezier(0.4, 0.7, 0.4, 1) forwards`;
+        document.body.appendChild(piece);
+        setTimeout(() => piece.remove(), dur + 100);
+      }
+    }
+
+    // ============ QUICK PLAY (FAB) ============
+    function quickPlay() {
+      // Pick a random hot Sala for instant action
+      const candidates = SALAS.filter(s => s.hot) ;
+      const pick = (candidates.length ? candidates : SALAS)[Math.floor(Math.random() * (candidates.length || SALAS.length))];
+      openSala(pick.id);
+    }
+    window.quickPlay = quickPlay;
+
     // ============ HOME RENDERING ============
     const grid = document.getElementById('tile-grid');
+    const heroMount = document.getElementById('hero-mount');
+
     function renderTiles() {
-      const list = activeFilter === 'all' ? SALAS : SALAS.filter(s => s.cat === activeFilter);
-      grid.innerHTML = list.map(s => tileHTML(s)).join('');
+      // Hero featured Sala — pick the .featured one (or fall back to first hot)
+      const featured = SALAS.find(s => s.featured) || SALAS.find(s => s.hot) || SALAS[0];
+      heroMount.innerHTML = bigTileHTML(featured, true);
+      const heroEl = document.getElementById('tile-' + featured.id);
+      if (heroEl) heroEl.addEventListener('click', () => openSala(featured.id));
+
+      // Rest of grid
+      const list = (activeFilter === 'all' ? SALAS : SALAS.filter(s => s.cat === activeFilter))
+        .filter(s => s.id !== featured.id || activeFilter !== 'all');
+      grid.innerHTML = list.map(s => bigTileHTML(s, false)).join('');
       list.forEach(s => {
         const el = document.getElementById('tile-' + s.id);
         if (el) el.addEventListener('click', () => openSala(s.id));
       });
-      document.getElementById('open-count').textContent = list.length;
+      document.getElementById('open-count').textContent = SALAS.length;
     }
 
-    function tileHTML(s) {
-      const pctFull = Math.round((s.filled / 20) * 100);
-      const liveSlot = s.live ? `<div id="tile-live-${s.id}" class="mt-2 flex items-center gap-2 flex-wrap">${liveTickerHTML(s) || '<span class="skeleton inline-block h-[18px] w-[80px]">.</span>'}</div>` : '';
+    // Big illustrated tile (Lotobola.com.pe style)
+    function bigTileHTML(s, isFeatured) {
+      const liveSlot = s.live
+        ? `<div class="big-tile-live" id="tile-live-${s.id}">${liveTickerHTML(s) || '<span class="skeleton inline-block h-[18px] w-[80px]">.</span>'}</div>`
+        : '';
+      const hotBadge = s.hot
+        ? `<span class="big-tile-hot">🔥 HOT</span>`
+        : (isFeatured ? `<span class="big-tile-hot">🌟 TOP 1</span>` : '');
+
+      // Probability bar: green when SÍ leads, red when NO leads, fills with dominant %
+      const yes = s.sourcePct;
+      const no = 100 - yes;
+      const dominant = yes >= 50 ? 'si' : 'no';
+      const dominantPct = Math.max(yes, no);
+      const dominantText = dominant === 'si'
+        ? `<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5"><path d="M5 12l5 5 9-11"/></svg> Probable SÍ`
+        : `<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5"><path d="M6 6l12 12M18 6L6 18"/></svg> Probable NO`;
+
       return `
-        <div class="tile cat-${s.cat}" id="tile-${s.id}">
-          <div class="flex items-start gap-3">
-            <div class="tile-stripe"></div>
-            <div class="flex-1 min-w-0">
-              <div class="flex items-center justify-between mb-1.5">
-                <span class="chip" style="background: var(--cat-bg); color: var(--cat);">${s.catLabel}</span>
-                <span class="text-[10.5px] font-semibold text-[--c-dim] flex items-center gap-1">
-                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
-                  ${s.closesIn}
-                </span>
-              </div>
-              <div class="font-display text-[15.5px] leading-[1.2] text-[--c-ink] mb-3">${s.q}</div>
-              ${liveSlot}
-              <div class="seats-bar mb-2 mt-2"><span style="width: ${pctFull}%"></span></div>
-              <div class="flex items-center justify-between text-[11px] font-semibold">
-                <span class="text-[--c-dim]">${s.filled}/20 asientos · S/ 5–20</span>
-                <span class="flex items-center gap-2">
-                  <span class="text-[--c-purple]">SÍ ${s.sourcePct}%</span>
-                  <span class="text-[--c-coral]">NO ${100 - s.sourcePct}%</span>
-                </span>
-              </div>
+        <div class="big-tile bg-${s.cat} ${isFeatured ? 'featured-tile' : ''}" id="tile-${s.id}">
+          ${hotBadge}
+          <span class="big-tile-clock">⏱ ${s.closesIn}</span>
+          <div class="big-tile-char">${s.char || '🎲'}</div>
+          <div class="big-tile-body">
+            <span class="big-tile-cat">${s.catLabel}<span class="price-tag">S/ 5–20</span></span>
+            <div class="big-tile-q">${s.q}</div>
+            ${liveSlot}
+            <div class="prob-bar-wrap">
+              <div class="prob-bar-fill ${dominant}" style="width: ${dominantPct}%"></div>
+            </div>
+            <div class="prob-row">
+              <span class="prob-label ${dominant}">${dominantText}</span>
+              <span class="prob-pct">${dominantPct}%</span>
             </div>
           </div>
         </div>`;
     }
+
+    // Backwards-compat for renderRelated which still calls tileHTML
+    function tileHTML(s) { return bigTileHTML(s, false); }
 
     // Filter wiring
     document.querySelectorAll('#filter-row .filter-pill').forEach(p => {
@@ -815,6 +1372,12 @@
       document.getElementById('detail-question').textContent = s.q;
       document.getElementById('detail-closes').textContent = s.closesIn;
       document.getElementById('detail-source').textContent = s.source;
+
+      // Tropical hero header — match the Sala's category gradient + emoji character
+      const hero = document.getElementById('detail-hero');
+      hero.classList.remove('bg-politica','bg-clima','bg-farandula','bg-cripto','bg-cultura','bg-tech','bg-eventos');
+      hero.classList.add('bg-' + s.cat);
+      document.getElementById('detail-hero-icon').textContent = s.char || '🎯';
       document.getElementById('detail-bettors').textContent = s.filled;
       document.getElementById('detail-si-pct').textContent = s.sourcePct + '%';
       document.getElementById('detail-no-pct').textContent = (100 - s.sourcePct) + '%';
@@ -905,10 +1468,33 @@
     function placeBet() {
       if (!currentSala || !selectedSide) return;
 
-      // Update wallet balance
+      // Update wallet balance with bump animation
       const bal = document.getElementById('balance');
       const newBal = (parseFloat(bal.textContent) - selectedStake).toFixed(2);
       bal.textContent = newBal;
+      const balPill = document.getElementById('balance-pill');
+      balPill.classList.remove('coin-bump'); void balPill.offsetWidth; balPill.classList.add('coin-bump');
+
+      // GAMIFICATION: confetti + XP + achievements + mission progress
+      fireConfetti(90);
+      gainXP(25);
+      game.betsPlaced += 1;
+      game.missionDone = Math.min(game.missionGoal, game.missionDone + 1);
+
+      if (game.betsPlaced === 1 && !game.achievements.has('first')) {
+        game.achievements.add('first');
+        setTimeout(() => showAchievement('🎉', '¡Primera apuesta!', '+25 XP · Bienvenido a ApuestaYa'), 350);
+      } else if (game.missionDone >= game.missionGoal && !game.achievements.has('mission')) {
+        game.achievements.add('mission');
+        setTimeout(() => showAchievement('🎯', '¡Misión cumplida!', '3/3 retos hoy · +50 XP bonus'), 350);
+        gainXP(50);
+      } else if (game.streak >= 5 && !game.achievements.has('streak5')) {
+        game.achievements.add('streak5');
+        setTimeout(() => showAchievement('🔥', '¡Racha de 5 días!', 'Sigue así · cuotas mejoradas mañana'), 350);
+      } else {
+        setTimeout(() => showAchievement('✨', '+25 XP', `Reto colocado · S/ ${selectedStake} a ${selectedSide.toUpperCase()}`), 250);
+      }
+      paintGameStats();
 
       // Confirm screen
       document.getElementById('confirm-cat').textContent = currentSala.catLabel.toUpperCase();
@@ -962,6 +1548,7 @@
     }
 
     // ============ INIT ============
+    paintGameStats();
     renderTiles();
 
     // Kick off live API fetches (CORS-friendly, no API keys needed)
