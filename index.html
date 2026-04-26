@@ -180,6 +180,35 @@
       100% { box-shadow: 0 0 0 0 rgba(225,29,72,0); }
     }
 
+    /* Live data badge on tiles + detail card */
+    .live-badge {
+      display: inline-flex; align-items: center; gap: 5px;
+      padding: 3px 9px; border-radius: 99px;
+      background: var(--c-ink); color: var(--c-lime);
+      font-size: 10px; font-weight: 800; letter-spacing: 0.06em;
+      text-transform: uppercase;
+      font-variant-numeric: tabular-nums;
+    }
+    .live-badge .live-dot { width: 6px; height: 6px; background: var(--c-lime); box-shadow: 0 0 0 0 rgba(200,255,0,0.8); }
+    @keyframes pulse-lime {
+      0% { box-shadow: 0 0 0 0 rgba(200,255,0,0.7); }
+      70% { box-shadow: 0 0 0 7px rgba(200,255,0,0); }
+      100% { box-shadow: 0 0 0 0 rgba(200,255,0,0); }
+    }
+    .live-badge .live-dot { animation: pulse-lime 1.6s infinite; }
+    .skeleton {
+      background: linear-gradient(90deg, #E9DEF8 0%, #F5EFFD 50%, #E9DEF8 100%);
+      background-size: 200% 100%; animation: shimmer 1.4s infinite linear;
+      border-radius: 6px; color: transparent;
+    }
+    @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+    .live-card {
+      background: linear-gradient(135deg, #0E0414 0%, #1A0F2E 100%);
+      color: white; border-radius: 18px; padding: 14px 16px;
+      box-shadow: 0 8px 22px rgba(20,8,50,0.18);
+    }
+    .live-card .num { font-family: 'Fraunces', Georgia, serif; font-weight: 900; font-variant-numeric: tabular-nums; }
+
     /* Footer ribbon */
     .lotobola-ribbon {
       background: var(--c-ink-2); color: var(--c-lime);
@@ -314,6 +343,20 @@
           <div class="flex justify-between mt-2 text-[14px] font-semibold">
             <span class="text-[--c-ink]">SÍ <span class="text-[--c-purple]" id="detail-si-pct">35%</span></span>
             <span class="text-[--c-coral] font-semibold">NO <span id="detail-no-pct">65%</span></span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Live data card (only for cripto/clima Salas with real APIs) -->
+      <div class="px-4 mt-3 hidden" id="detail-live-wrap">
+        <div class="live-card">
+          <div class="flex items-center justify-between mb-2">
+            <span class="live-badge"><span class="live-dot"></span> En vivo</span>
+            <span class="text-[10px] uppercase tracking-wider opacity-60 font-semibold" id="detail-live-source">DATOS</span>
+          </div>
+          <div id="detail-live-body">
+            <div class="skeleton h-[26px] w-[60%] mb-2">.</div>
+            <div class="skeleton h-[14px] w-[40%]">.</div>
           </div>
         </div>
       </div>
@@ -457,16 +500,176 @@
     // ============ DATA ============
     const SALAS = [
       { id: 'p1', cat: 'politica', catLabel: 'Política', q: '¿Aprueba el Congreso la reforma esta semana?', filled: 14, si: 7, no: 7, sourcePct: 35, source: 'ONPE', closesIn: '2h 14m', closesMs: 8040000 },
-      { id: 'c1', cat: 'clima',    catLabel: 'Clima',    q: '¿Llueve en Lima este fin de semana?',          filled: 9,  si: 6, no: 3, sourcePct: 60, source: 'SENAMHI', closesIn: '1d 4h', closesMs: 100800000 },
+      { id: 'c1', cat: 'clima',    catLabel: 'Clima',    q: '¿Llueve en Lima este fin de semana?',          filled: 9,  si: 6, no: 3, sourcePct: 60, source: 'SENAMHI', closesIn: '1d 4h', closesMs: 100800000, live: 'weather' },
       { id: 'f1', cat: 'farandula',catLabel: 'Farándula',q: '¿Quién gana El Gran Chef esta noche?',           filled: 18, si: 10, no: 8, sourcePct: 55, source: 'Latina TV', closesIn: '38m', closesMs: 2280000 },
-      { id: 'b1', cat: 'cripto',   catLabel: 'Cripto',   q: '¿Cierra Bitcoin sobre US$ 80K el viernes?',     filled: 12, si: 8, no: 4, sourcePct: 67, source: 'CoinGecko', closesIn: '3d 6h', closesMs: 280800000 },
+      { id: 'b1', cat: 'cripto',   catLabel: 'Cripto',   q: '¿Cierra Bitcoin sobre US$ 80K el viernes?',     filled: 12, si: 8, no: 4, sourcePct: 67, source: 'CoinGecko', closesIn: '3d 6h', closesMs: 280800000, live: 'btc', strike: 80000 },
       { id: 'm1', cat: 'cultura',  catLabel: 'Cultura',  q: '¿Bad Bunny anuncia gira 2026 en mayo?',         filled: 6,  si: 4, no: 2, sourcePct: 65, source: 'Spotify',   closesIn: '5d', closesMs: 432000000 },
       { id: 't1', cat: 'tech',     catLabel: 'Tech',     q: '¿Apple presenta nuevo iPad esta semana?',       filled: 11, si: 7, no: 4, sourcePct: 64, source: 'Bloomberg', closesIn: '2d 8h', closesMs: 201600000 },
       { id: 'e1', cat: 'eventos',  catLabel: 'Eventos',  q: '¿Mistura supera los 100K visitantes este año?', filled: 4,  si: 3, no: 1, sourcePct: 75, source: 'MINCETUR',  closesIn: '12d', closesMs: 1036800000 },
-      { id: 'p2', cat: 'politica', catLabel: 'Política', q: '¿Sube el dólar arriba de S/ 3.80 esta semana?', filled: 17, si: 11, no: 6, sourcePct: 65, source: 'BCR', closesIn: '4h 12m', closesMs: 15120000 },
+      { id: 'p2', cat: 'politica', catLabel: 'Política', q: '¿Sube el dólar arriba de S/ 3.80 esta semana?', filled: 17, si: 11, no: 6, sourcePct: 65, source: 'BCR', closesIn: '4h 12m', closesMs: 15120000, live: 'fx', strike: 3.80 },
       { id: 'f2', cat: 'farandula',catLabel: 'Farándula',q: '¿Eliminan a Pancho en Esto Es Guerra hoy?',     filled: 19, si: 9,  no: 10, sourcePct: 47, source: 'América TV', closesIn: '2h 30m', closesMs: 9000000 },
       { id: 'p3', cat: 'politica', catLabel: 'Política', q: '¿Aprueba Boluarte > 10% en la próxima encuesta?',filled: 8, si: 2,  no: 6, sourcePct: 25, source: 'IEP',       closesIn: '6d', closesMs: 518400000 },
     ];
+
+    // ============ LIVE DATA (real public APIs, no key needed) ============
+    const liveCache = { btc: null, weather: null, fx: null, fetchedAt: {} };
+
+    function fmtUSD(n) { return '$' + n.toLocaleString('en-US', { maximumFractionDigits: 0 }); }
+    function fmtPEN(n) { return 'S/ ' + n.toFixed(3); }
+    function fmtAgo(ts) {
+      if (!ts) return '';
+      const s = Math.max(0, Math.round((Date.now() - ts) / 1000));
+      if (s < 60) return `hace ${s}s`;
+      const m = Math.floor(s / 60);
+      if (m < 60) return `hace ${m}m`;
+      return `hace ${Math.floor(m / 60)}h`;
+    }
+
+    async function fetchBTC() {
+      try {
+        const r = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd&include_24hr_change=true');
+        if (!r.ok) throw new Error('coingecko ' + r.status);
+        const d = await r.json();
+        liveCache.btc = { price: d.bitcoin.usd, change24h: d.bitcoin.usd_24h_change };
+        liveCache.fetchedAt.btc = Date.now();
+      } catch (e) { console.warn('BTC fetch failed', e); liveCache.btc = { error: true }; }
+      paintLive();
+    }
+
+    async function fetchWeather() {
+      try {
+        const url = 'https://api.open-meteo.com/v1/forecast?latitude=-12.0464&longitude=-77.0428&daily=precipitation_probability_max,precipitation_sum,temperature_2m_max&timezone=America%2FLima&forecast_days=7';
+        const r = await fetch(url);
+        if (!r.ok) throw new Error('open-meteo ' + r.status);
+        const d = await r.json();
+        const days = d.daily.time;
+        const today = new Date().toDateString();
+        const weekend = [];
+        days.forEach((dayStr, i) => {
+          const date = new Date(dayStr + 'T12:00:00');
+          if (date.toDateString() === today) return;
+          const dow = date.getDay();
+          if ((dow === 6 || dow === 0) && weekend.length < 2) {
+            weekend.push({
+              label: dow === 6 ? 'Sáb' : 'Dom',
+              date: dayStr,
+              prob: d.daily.precipitation_probability_max[i],
+              mm: d.daily.precipitation_sum[i],
+              tmax: d.daily.temperature_2m_max[i]
+            });
+          }
+        });
+        liveCache.weather = { weekend };
+        liveCache.fetchedAt.weather = Date.now();
+      } catch (e) { console.warn('Weather fetch failed', e); liveCache.weather = { error: true }; }
+      paintLive();
+    }
+
+    async function fetchFX() {
+      try {
+        // jsdelivr-hosted free currency API (mirror of fawazahmed0/exchange-api), permissive CORS
+        const r = await fetch('https://cdn.jsdelivr.net/npm/@fawazahmed0/currency-api@latest/v1/currencies/usd.json');
+        if (!r.ok) throw new Error('fx ' + r.status);
+        const d = await r.json();
+        const pen = d.usd && d.usd.pen;
+        if (!pen) throw new Error('no pen rate');
+        liveCache.fx = { usdPen: pen, asOf: d.date };
+        liveCache.fetchedAt.fx = Date.now();
+      } catch (e) { console.warn('FX fetch failed', e); liveCache.fx = { error: true }; }
+      paintLive();
+    }
+
+    function paintLive() {
+      // Repaint home tiles (live tickers)
+      SALAS.forEach(s => {
+        if (!s.live) return;
+        const el = document.getElementById('tile-live-' + s.id);
+        if (!el) return;
+        el.innerHTML = liveTickerHTML(s);
+      });
+      // Repaint detail card if currently open on a live Sala
+      if (currentSala && currentSala.live) renderLiveDetail(currentSala);
+    }
+
+    function liveTickerHTML(s) {
+      if (s.live === 'btc' && liveCache.btc && !liveCache.btc.error) {
+        const ch = liveCache.btc.change24h;
+        const arrow = ch >= 0 ? '▲' : '▼';
+        const col = ch >= 0 ? '#4D8800' : 'var(--c-coral)';
+        return `<span class="live-badge"><span class="live-dot"></span>${fmtUSD(liveCache.btc.price)}</span> <span style="color:${col}; font-weight:700; font-size:10.5px;">${arrow} ${Math.abs(ch).toFixed(2)}%</span>`;
+      }
+      if (s.live === 'weather' && liveCache.weather && !liveCache.weather.error && liveCache.weather.weekend.length) {
+        const w = liveCache.weather.weekend;
+        return w.map(d => `<span class="live-badge"><span class="live-dot"></span>${d.label} ${d.prob}%</span>`).join(' ');
+      }
+      if (s.live === 'fx' && liveCache.fx && !liveCache.fx.error) {
+        return `<span class="live-badge"><span class="live-dot"></span>USD/PEN ${fmtPEN(liveCache.fx.usdPen)}</span>`;
+      }
+      return ''; // loading or error
+    }
+
+    function renderLiveDetail(s) {
+      const wrap = document.getElementById('detail-live-wrap');
+      const body = document.getElementById('detail-live-body');
+      const src = document.getElementById('detail-live-source');
+      if (!s.live) { wrap.classList.add('hidden'); return; }
+      wrap.classList.remove('hidden');
+      const data = liveCache[s.live];
+      const fetchedAt = liveCache.fetchedAt[s.live];
+
+      if (s.live === 'btc') {
+        src.textContent = 'CoinGecko · ' + fmtAgo(fetchedAt);
+        if (!data) { body.innerHTML = '<div class="skeleton h-[26px] w-[60%] mb-2">.</div><div class="skeleton h-[14px] w-[40%]">.</div>'; return; }
+        if (data.error) { body.innerHTML = `<div class="text-[13px] opacity-80">No se pudo cargar el precio. Reintenta.</div>`; return; }
+        const distance = data.price - s.strike;
+        const above = distance >= 0;
+        const ch = data.change24h;
+        const chCol = ch >= 0 ? '#C8FF00' : '#FF6188';
+        body.innerHTML = `
+          <div class="flex items-baseline gap-2">
+            <div class="num text-[28px] leading-none">${fmtUSD(data.price)}</div>
+            <div style="color:${chCol}; font-weight:700; font-size:13px;">${ch >= 0 ? '▲' : '▼'} ${Math.abs(ch).toFixed(2)}% 24h</div>
+          </div>
+          <div class="text-[12px] opacity-80 mt-2">
+            ${above
+              ? `Falta solo ${fmtUSD(Math.abs(distance))} para perder el strike de $${s.strike.toLocaleString()}.`
+              : `Necesita subir ${fmtUSD(Math.abs(distance))} para llegar al strike de $${s.strike.toLocaleString()}.`}
+          </div>`;
+      }
+      if (s.live === 'weather') {
+        src.textContent = 'Open-Meteo · ' + fmtAgo(fetchedAt);
+        if (!data) { body.innerHTML = '<div class="skeleton h-[26px] w-[60%] mb-2">.</div><div class="skeleton h-[14px] w-[40%]">.</div>'; return; }
+        if (data.error) { body.innerHTML = `<div class="text-[13px] opacity-80">No se pudo cargar el pronóstico.</div>`; return; }
+        if (!data.weekend.length) { body.innerHTML = `<div class="text-[13px] opacity-80">No hay sábado/domingo en el rango pronosticado.</div>`; return; }
+        body.innerHTML = `
+          <div class="grid grid-cols-${data.weekend.length} gap-3">
+            ${data.weekend.map(d => `
+              <div>
+                <div class="text-[10px] uppercase tracking-wider opacity-70 font-bold">${d.label} · ${d.date.slice(5)}</div>
+                <div class="num text-[24px] leading-none mt-1">${d.prob}%</div>
+                <div class="text-[11px] opacity-70 mt-1">${d.mm.toFixed(1)}mm · ${Math.round(d.tmax)}°C</div>
+              </div>`).join('')}
+          </div>
+          <div class="text-[11px] opacity-70 mt-3">Probabilidad máx. de precipitación · Lima (-12.05, -77.04)</div>`;
+      }
+      if (s.live === 'fx') {
+        src.textContent = 'Currency-API · ' + fmtAgo(fetchedAt);
+        if (!data) { body.innerHTML = '<div class="skeleton h-[26px] w-[60%] mb-2">.</div><div class="skeleton h-[14px] w-[40%]">.</div>'; return; }
+        if (data.error) { body.innerHTML = `<div class="text-[13px] opacity-80">No se pudo cargar el tipo de cambio.</div>`; return; }
+        const above = data.usdPen >= s.strike;
+        body.innerHTML = `
+          <div class="flex items-baseline gap-2">
+            <div class="text-[10px] uppercase tracking-wider opacity-70 font-bold">USD →</div>
+            <div class="num text-[28px] leading-none">${fmtPEN(data.usdPen)}</div>
+          </div>
+          <div class="text-[12px] opacity-80 mt-2">
+            ${above
+              ? `Ya está sobre S/ ${s.strike.toFixed(2)} (+${(data.usdPen - s.strike).toFixed(3)}).`
+              : `Faltan S/ ${(s.strike - data.usdPen).toFixed(3)} para cruzar el strike.`}
+          </div>
+          <div class="text-[11px] opacity-60 mt-3">Tipo de cambio referencial · cierre ${data.asOf}</div>`;
+      }
+    }
 
     const RAKE = 0.12;
     let activeFilter = 'all';
@@ -489,6 +692,7 @@
 
     function tileHTML(s) {
       const pctFull = Math.round((s.filled / 20) * 100);
+      const liveSlot = s.live ? `<div id="tile-live-${s.id}" class="mt-2 flex items-center gap-2 flex-wrap">${liveTickerHTML(s) || '<span class="skeleton inline-block h-[18px] w-[80px]">.</span>'}</div>` : '';
       return `
         <div class="tile cat-${s.cat}" id="tile-${s.id}">
           <div class="flex items-start gap-3">
@@ -502,7 +706,8 @@
                 </span>
               </div>
               <div class="font-display text-[15.5px] leading-[1.2] text-[--c-ink] mb-3">${s.q}</div>
-              <div class="seats-bar mb-2"><span style="width: ${pctFull}%"></span></div>
+              ${liveSlot}
+              <div class="seats-bar mb-2 mt-2"><span style="width: ${pctFull}%"></span></div>
               <div class="flex items-center justify-between text-[11px] font-semibold">
                 <span class="text-[--c-dim]">${s.filled}/20 asientos · S/ 5–20</span>
                 <span class="flex items-center gap-2">
@@ -579,6 +784,23 @@
       cb.textContent = 'Elige un lado para apostar';
 
       updatePayout();
+
+      // Live data card visibility
+      const liveWrap = document.getElementById('detail-live-wrap');
+      if (s.live) {
+        liveWrap.classList.remove('hidden');
+        renderLiveDetail(s);
+        // Refresh from API in case cache is stale (>60s)
+        const fa = liveCache.fetchedAt[s.live] || 0;
+        if (Date.now() - fa > 60000) {
+          if (s.live === 'btc') fetchBTC();
+          else if (s.live === 'weather') fetchWeather();
+          else if (s.live === 'fx') fetchFX();
+        }
+      } else {
+        liveWrap.classList.add('hidden');
+      }
+
       showScreen('screen-detail');
     }
 
@@ -678,6 +900,19 @@
 
     // ============ INIT ============
     renderTiles();
+
+    // Kick off live API fetches (CORS-friendly, no API keys needed)
+    if (SALAS.some(s => s.live === 'btc'))     fetchBTC();
+    if (SALAS.some(s => s.live === 'weather')) fetchWeather();
+    if (SALAS.some(s => s.live === 'fx'))      fetchFX();
+
+    // Refresh tickers every 90s while the page is open
+    setInterval(() => {
+      if (document.hidden) return;
+      if (SALAS.some(s => s.live === 'btc'))     fetchBTC();
+      if (SALAS.some(s => s.live === 'weather')) fetchWeather();
+      if (SALAS.some(s => s.live === 'fx'))      fetchFX();
+    }, 90000);
   </script>
 </body>
 </html>
