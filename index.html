@@ -1,0 +1,683 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>ApuestaYa · Lotobola — Prototype</title>
+  <meta name="description" content="ApuestaYa — predicciones al deslizar. Capped Salas. Curated by Lotobola." />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,800;9..144,900&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --c-purple: #5B21B6;
+      --c-purple-hi: #7C3AED;
+      --c-purple-lo: #EDE3FE;
+      --c-lime: #C8FF00;
+      --c-lime-bg: #F0FFB3;
+      --c-coral: #E11D48;
+      --c-cream: #FAF7FF;
+      --c-soft: #F1ECFA;
+      --c-ink: #0E0414;
+      --c-ink-2: #1A0F2E;
+      --c-dim: #6B5F80;
+      --c-border: #DCD2EF;
+    }
+    html, body { background: #ECE6F8; }
+    body { font-family: 'Inter', system-ui, -apple-system, sans-serif; color: var(--c-ink); -webkit-font-smoothing: antialiased; }
+    .font-display { font-family: 'Fraunces', Georgia, serif; font-weight: 800; letter-spacing: -0.01em; }
+    .font-display-tight { font-family: 'Fraunces', Georgia, serif; font-weight: 900; letter-spacing: -0.025em; }
+
+    /* Phone frame on desktop */
+    .phone-shell {
+      width: 100%;
+      max-width: 100%;
+      min-height: 100vh;
+      background: var(--c-cream);
+      position: relative;
+      overflow: hidden;
+    }
+    @media (min-width: 768px) {
+      body { padding: 32px 16px; min-height: 100vh; display: flex; align-items: center; justify-content: center; }
+      .phone-shell {
+        width: 420px;
+        height: 880px;
+        max-height: calc(100vh - 64px);
+        min-height: 0;
+        border-radius: 44px;
+        box-shadow: 0 30px 80px rgba(20, 8, 50, 0.25), 0 8px 24px rgba(20, 8, 50, 0.15), inset 0 0 0 6px #1B1230, inset 0 0 0 8px #2A1A4A;
+      }
+      .phone-shell::before {
+        content: ""; position: absolute; top: 14px; left: 50%; transform: translateX(-50%);
+        width: 110px; height: 28px; background: #0E0414; border-radius: 16px; z-index: 60;
+      }
+    }
+
+    .screen { position: absolute; inset: 0; overflow-y: auto; -webkit-overflow-scrolling: touch; }
+    .screen.hidden-screen { display: none; }
+    .screen::-webkit-scrollbar { width: 0; }
+
+    .chip {
+      display: inline-flex; align-items: center; gap: 4px;
+      padding: 6px 12px; border-radius: 999px;
+      font-size: 11px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase;
+      white-space: nowrap;
+    }
+
+    /* Tile category accent stripes */
+    .cat-politica { --cat: #5B21B6; --cat-bg: #EDE3FE; }
+    .cat-clima    { --cat: #1C7293; --cat-bg: #DCEEF5; }
+    .cat-farandula{ --cat: #E11D48; --cat-bg: #FCE7EE; }
+    .cat-cripto   { --cat: #7C3AED; --cat-bg: #EDE3FE; }
+    .cat-cultura  { --cat: #6B8E00; --cat-bg: #F0FFB3; }
+    .cat-tech     { --cat: #2D6CDF; --cat-bg: #DCE7FA; }
+    .cat-eventos  { --cat: #C84B82; --cat-bg: #FAE2EE; }
+
+    /* Tile */
+    .tile {
+      background: white; border-radius: 18px; padding: 14px;
+      box-shadow: 0 1px 0 rgba(20,8,50,0.04), 0 8px 22px rgba(20,8,50,0.06);
+      border: 1px solid var(--c-border);
+      transition: transform 120ms ease, box-shadow 120ms ease;
+      cursor: pointer;
+    }
+    .tile:active { transform: scale(0.985); }
+    .tile-stripe { width: 4px; height: 28px; border-radius: 4px; background: var(--cat); }
+
+    /* Progress bar */
+    .seats-bar { height: 6px; border-radius: 99px; background: #E9DEF8; overflow: hidden; }
+    .seats-bar > span { display: block; height: 100%; background: linear-gradient(90deg, var(--c-purple), var(--c-purple-hi)); }
+    .odds-bar { height: 8px; border-radius: 99px; background: var(--c-coral); overflow: hidden; position: relative; }
+    .odds-bar > span { display: block; height: 100%; background: var(--c-lime); }
+
+    /* SI / NO buttons */
+    .btn-si { background: var(--c-lime); color: var(--c-ink); }
+    .btn-no { background: var(--c-coral); color: white; }
+    .btn-active-si { box-shadow: 0 0 0 4px rgba(200, 255, 0, 0.4), 0 8px 22px rgba(0,0,0,0.12); transform: translateY(-1px); }
+    .btn-active-no { box-shadow: 0 0 0 4px rgba(225, 29, 72, 0.3), 0 8px 22px rgba(0,0,0,0.12); transform: translateY(-1px); }
+
+    .stake-chip {
+      padding: 12px 0; border-radius: 14px; font-weight: 700; font-size: 16px;
+      background: white; border: 1.5px solid var(--c-border); color: var(--c-ink);
+      cursor: pointer; transition: all 120ms ease;
+    }
+    .stake-chip.active { background: var(--c-purple); color: white; border-color: var(--c-purple); }
+
+    /* Seat dots */
+    .seat-dot { width: 100%; aspect-ratio: 1; border-radius: 999px; }
+    .seat-dot.filled-si { background: var(--c-lime); }
+    .seat-dot.filled-no { background: var(--c-coral); }
+    .seat-dot.empty { background: white; border: 1.5px solid var(--c-border); }
+
+    /* Sticky bottom CTA */
+    .cta-bar {
+      position: sticky; bottom: 0; left: 0; right: 0;
+      padding: 14px 16px 22px; background: linear-gradient(180deg, rgba(250,247,255,0) 0%, var(--c-cream) 30%);
+    }
+
+    /* Confirmation */
+    .check-circle {
+      width: 96px; height: 96px; border-radius: 50%;
+      background: var(--c-lime); display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 0 0 14px rgba(200, 255, 0, 0.18);
+      animation: pop 600ms cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    @keyframes pop { 0% { transform: scale(0.4); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+
+    /* Countdown */
+    .count-cell {
+      background: var(--c-ink); color: var(--c-lime);
+      font-family: 'Fraunces', Georgia, serif; font-weight: 900;
+      padding: 10px 0; border-radius: 12px; min-width: 0;
+    }
+
+    /* Header */
+    .topbar {
+      background: var(--c-cream);
+      padding: 18px 16px 8px;
+      position: sticky; top: 0; z-index: 30;
+      backdrop-filter: blur(12px);
+    }
+    .topbar-detail {
+      background: var(--c-purple);
+      color: white;
+      padding: 18px 16px 16px;
+      position: sticky; top: 0; z-index: 30;
+    }
+
+    /* Tab bar */
+    .tabbar {
+      position: sticky; bottom: 0;
+      background: white; border-top: 1px solid var(--c-border);
+      padding: 10px 8px 14px;
+      display: grid; grid-template-columns: repeat(4, 1fr);
+    }
+    .tab { display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 6px 0; color: var(--c-dim); font-size: 10.5px; font-weight: 600; }
+    .tab.active { color: var(--c-purple); }
+    .tab svg { width: 22px; height: 22px; }
+
+    /* Filter pill row */
+    .filter-row { display: flex; gap: 8px; overflow-x: auto; padding: 8px 16px 14px; scrollbar-width: none; }
+    .filter-row::-webkit-scrollbar { display: none; }
+    .filter-pill {
+      flex: 0 0 auto; padding: 8px 14px; border-radius: 999px;
+      background: white; border: 1px solid var(--c-border); color: var(--c-ink);
+      font-size: 12.5px; font-weight: 600; cursor: pointer; white-space: nowrap;
+    }
+    .filter-pill.active { background: var(--c-ink); color: white; border-color: var(--c-ink); }
+
+    /* small live dot */
+    .live-dot {
+      width: 7px; height: 7px; border-radius: 50%; background: var(--c-coral);
+      box-shadow: 0 0 0 0 rgba(225, 29, 72, 0.7);
+      animation: pulse 1.6s infinite;
+      display: inline-block;
+    }
+    @keyframes pulse {
+      0% { box-shadow: 0 0 0 0 rgba(225,29,72,0.6); }
+      70% { box-shadow: 0 0 0 8px rgba(225,29,72,0); }
+      100% { box-shadow: 0 0 0 0 rgba(225,29,72,0); }
+    }
+
+    /* Footer ribbon */
+    .lotobola-ribbon {
+      background: var(--c-ink-2); color: var(--c-lime);
+      padding: 8px 16px; font-size: 10.5px; font-weight: 700; letter-spacing: 0.18em;
+      text-align: center; text-transform: uppercase;
+    }
+
+    /* logo */
+    .brand-mark {
+      font-family: 'Fraunces', Georgia, serif; font-weight: 900;
+      font-size: 22px; letter-spacing: -0.02em; color: var(--c-ink);
+    }
+    .brand-mark .ya { color: var(--c-coral); }
+    .brand-mark .bang { color: var(--c-purple); }
+
+    /* Demo banner (screen scaffolding) */
+    .demo-pill {
+      position: fixed; bottom: 12px; left: 12px;
+      padding: 6px 10px; border-radius: 999px;
+      background: rgba(20, 8, 50, 0.85); color: white;
+      font-size: 10.5px; font-weight: 600; letter-spacing: 0.04em;
+      z-index: 100;
+    }
+    @media (min-width: 768px) {
+      .demo-pill { left: 50%; transform: translateX(-50%); }
+    }
+
+    /* hide scrollbars on screens by default */
+    .screen { scrollbar-width: none; }
+    .screen::-webkit-scrollbar { display: none; }
+  </style>
+</head>
+<body>
+  <div class="phone-shell" id="shell">
+
+    <!-- ============ SCREEN: HOME (Salas list) ============ -->
+    <section class="screen" id="screen-home">
+      <header class="topbar">
+        <div class="flex items-center justify-between mb-1">
+          <div class="flex items-center gap-2">
+            <span class="brand-mark">Apuesta<span class="ya">Ya</span><span class="bang">!</span></span>
+            <span class="chip" style="background: var(--c-purple-lo); color: var(--c-purple);">BETA</span>
+          </div>
+          <div class="flex items-center gap-3">
+            <button class="w-9 h-9 rounded-full bg-white border border-[--c-border] flex items-center justify-center" aria-label="Notificaciones">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 8a6 6 0 1 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>
+            </button>
+            <div class="text-right">
+              <div class="text-[10px] uppercase font-bold tracking-wider text-[--c-dim]">Saldo</div>
+              <div class="font-display text-[18px] leading-none">S/ <span id="balance">42.50</span></div>
+            </div>
+          </div>
+        </div>
+        <h1 class="font-display-tight text-[28px] leading-[1.05] mt-3">¿En qué crees<br>esta semana?</h1>
+        <p class="text-[13px] text-[--c-dim] mt-1">Salas curadas por Lotobola. 20 asientos. S/ 5–20 por reto.</p>
+      </header>
+
+      <div class="filter-row" id="filter-row">
+        <button class="filter-pill active" data-cat="all">Todas</button>
+        <button class="filter-pill" data-cat="politica">Política</button>
+        <button class="filter-pill" data-cat="clima">Clima</button>
+        <button class="filter-pill" data-cat="farandula">Farándula</button>
+        <button class="filter-pill" data-cat="cripto">Cripto</button>
+        <button class="filter-pill" data-cat="cultura">Cultura</button>
+        <button class="filter-pill" data-cat="tech">Tech</button>
+        <button class="filter-pill" data-cat="eventos">Eventos</button>
+      </div>
+
+      <div class="px-4 pb-2 flex items-center justify-between">
+        <div class="flex items-center gap-2 text-[11.5px] text-[--c-dim] font-semibold uppercase tracking-wider">
+          <span class="live-dot"></span> <span id="open-count">10</span> Salas abiertas
+        </div>
+        <button class="text-[11.5px] font-semibold text-[--c-purple] uppercase tracking-wider">Ordenar</button>
+      </div>
+
+      <div class="px-4 pb-28 grid gap-3" id="tile-grid"></div>
+
+      <nav class="tabbar">
+        <button class="tab active">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M3 12 12 3l9 9"/><path d="M5 10v10h4v-6h6v6h4V10"/></svg>
+          Inicio
+        </button>
+        <button class="tab" onclick="alert('Demo: pestaña Mis Apuestas')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M4 7h16M4 12h16M4 17h10"/></svg>
+          Mis Retos
+        </button>
+        <button class="tab" onclick="alert('Demo: Reta a tu pata (P2P)')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="9" cy="8" r="3"/><circle cx="17" cy="10" r="2.5"/><path d="M3 20c0-3 3-5 6-5s6 2 6 5M14 20c0-2 2-4 4-4s3 1 3 4"/></svg>
+          Pata
+        </button>
+        <button class="tab" onclick="alert('Demo: Wallet')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="3" y="6" width="18" height="13" rx="2"/><path d="M16 12h2"/><path d="M3 10h18"/></svg>
+          Wallet
+        </button>
+      </nav>
+    </section>
+
+    <!-- ============ SCREEN: DETAIL (Sala) ============ -->
+    <section class="screen hidden-screen" id="screen-detail">
+      <header class="topbar-detail">
+        <div class="flex items-center gap-3">
+          <button onclick="goHome()" class="w-9 h-9 rounded-full bg-white/15 flex items-center justify-center" aria-label="Volver">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.4"><path d="M15 18l-6-6 6-6"/></svg>
+          </button>
+          <div class="flex-1">
+            <div class="text-[10px] font-bold tracking-[0.18em] uppercase opacity-70" id="detail-cat">CATEGORÍA</div>
+            <div class="text-[12px] font-semibold opacity-90">Sala curada · Lotobola</div>
+          </div>
+          <button class="w-9 h-9 rounded-full bg-white/15 flex items-center justify-center" onclick="alert('Demo: compartir por WhatsApp')" aria-label="Compartir">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.2"><path d="M4 12v8h16v-8"/><path d="M12 16V4M8 8l4-4 4 4"/></svg>
+          </button>
+        </div>
+      </header>
+
+      <div class="px-5 pt-4 pb-3 bg-[--c-purple] text-white">
+        <h2 class="font-display-tight text-[26px] leading-[1.1]" id="detail-question">¿Pregunta?</h2>
+        <div class="flex items-center gap-3 mt-3 text-[12px] opacity-90">
+          <span><span class="live-dot"></span> Cierra en <span id="detail-closes" class="font-bold">2h 14m</span></span>
+          <span class="opacity-50">·</span>
+          <span>Resuelto por <span id="detail-source" class="font-bold">ONPE</span></span>
+        </div>
+      </div>
+
+      <!-- Live odds card -->
+      <div class="px-4 -mt-3">
+        <div class="bg-white rounded-2xl p-4 border border-[--c-border] shadow-sm">
+          <div class="flex items-center justify-between text-[11px] font-bold tracking-wider uppercase text-[--c-dim] mb-2">
+            <span>Probabilidades en vivo</span>
+            <span class="text-[--c-purple]"><span id="detail-bettors">14</span>/20 asientos</span>
+          </div>
+          <div class="odds-bar"><span id="detail-odds-bar" style="width: 35%;"></span></div>
+          <div class="flex justify-between mt-2 text-[14px] font-semibold">
+            <span class="text-[--c-ink]">SÍ <span class="text-[--c-purple]" id="detail-si-pct">35%</span></span>
+            <span class="text-[--c-coral] font-semibold">NO <span id="detail-no-pct">65%</span></span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Seats grid -->
+      <div class="px-4 mt-4">
+        <div class="bg-white rounded-2xl p-4 border border-[--c-border]">
+          <div class="text-[11px] font-bold tracking-wider uppercase text-[--c-dim] mb-3">Los 20 asientos</div>
+          <div class="grid grid-cols-10 gap-1.5" id="seats-grid"></div>
+          <div class="flex justify-between mt-3 text-[11px] font-semibold">
+            <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-[--c-lime]"></span> SÍ <span id="seats-si">7</span></span>
+            <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-[--c-coral]"></span> NO <span id="seats-no">7</span></span>
+            <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-white border border-[--c-border]"></span> Libre <span id="seats-free">6</span></span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Stake -->
+      <div class="px-4 mt-4">
+        <div class="text-[11px] font-bold tracking-wider uppercase text-[--c-dim] mb-2">Tu apuesta · S/ 5–20</div>
+        <div class="grid grid-cols-4 gap-2" id="stake-row">
+          <button class="stake-chip" data-stake="5">S/ 5</button>
+          <button class="stake-chip active" data-stake="10">S/ 10</button>
+          <button class="stake-chip" data-stake="15">S/ 15</button>
+          <button class="stake-chip" data-stake="20">S/ 20</button>
+        </div>
+      </div>
+
+      <!-- Potential payout -->
+      <div class="px-4 mt-3">
+        <div class="bg-[--c-soft] rounded-xl p-3.5 flex items-center justify-between">
+          <div>
+            <div class="text-[10.5px] font-bold tracking-wider uppercase text-[--c-dim]">Si ganas</div>
+            <div class="font-display text-[22px] leading-none mt-0.5"><span id="detail-payout">17.50</span> <span class="text-[14px] text-[--c-dim] font-bold">soles</span></div>
+          </div>
+          <div class="text-right">
+            <div class="text-[10.5px] font-bold tracking-wider uppercase text-[--c-dim]">Cuota</div>
+            <div class="font-display text-[18px] leading-none mt-0.5 text-[--c-purple]"><span id="detail-multiplier">1.75x</span></div>
+          </div>
+        </div>
+        <p class="text-[10.5px] text-[--c-dim] mt-2 leading-snug">Pago según libro emparejado. Lotobola toma 12% de comisión sobre el bote ganador. Sin riesgo de principal.</p>
+      </div>
+
+      <!-- SI / NO buttons -->
+      <div class="cta-bar mt-4">
+        <div class="grid grid-cols-2 gap-3">
+          <button id="btn-si" class="btn-si py-4 rounded-2xl font-display text-[20px] flex items-center justify-center gap-2" onclick="pickSide('si')">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 12l5 5 9-11"/></svg>
+            SÍ
+          </button>
+          <button id="btn-no" class="btn-no py-4 rounded-2xl font-display text-[20px] flex items-center justify-center gap-2" onclick="pickSide('no')">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M6 6l12 12M18 6L6 18"/></svg>
+            NO
+          </button>
+        </div>
+        <button id="btn-confirm" class="w-full mt-3 py-4 rounded-2xl bg-[--c-ink] text-[--c-lime] font-display text-[17px] disabled:opacity-40 disabled:cursor-not-allowed" disabled onclick="placeBet()">
+          Elige un lado para apostar
+        </button>
+      </div>
+    </section>
+
+    <!-- ============ SCREEN: CONFIRMATION ============ -->
+    <section class="screen hidden-screen" id="screen-confirm">
+      <header class="topbar-detail" style="background: var(--c-ink-2);">
+        <div class="flex items-center justify-between">
+          <button onclick="goHome()" class="w-9 h-9 rounded-full bg-white/15 flex items-center justify-center">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.4"><path d="M15 18l-6-6 6-6"/></svg>
+          </button>
+          <div class="text-[10.5px] font-bold tracking-[0.2em] uppercase opacity-80">Reto registrado</div>
+          <div class="w-9"></div>
+        </div>
+      </header>
+
+      <div class="flex flex-col items-center pt-7 pb-2 px-5 text-center">
+        <div class="check-circle">
+          <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="3.5"><path d="M5 12l5 5 9-11"/></svg>
+        </div>
+        <h2 class="font-display-tight text-[28px] leading-[1.05] mt-5">¡Tu apuesta<br>está dentro!</h2>
+        <p class="text-[13px] text-[--c-dim] mt-2 max-w-[280px]">Lotobola guarda tu asiento. Te avisamos en cuanto haya resultado.</p>
+      </div>
+
+      <!-- Bet recap -->
+      <div class="px-4 mt-3">
+        <div class="bg-white rounded-2xl border border-[--c-border] overflow-hidden">
+          <div class="p-4 border-b border-[--c-border]">
+            <div class="text-[10.5px] font-bold uppercase tracking-wider text-[--c-dim]" id="confirm-cat">CATEGORÍA</div>
+            <div class="font-display text-[16px] leading-snug mt-1" id="confirm-question">Pregunta</div>
+          </div>
+          <div class="grid grid-cols-3 divide-x divide-[--c-border]">
+            <div class="p-3 text-center">
+              <div class="text-[9.5px] font-bold uppercase tracking-wider text-[--c-dim]">Tu lado</div>
+              <div class="font-display text-[18px] mt-0.5" id="confirm-side">SÍ</div>
+            </div>
+            <div class="p-3 text-center">
+              <div class="text-[9.5px] font-bold uppercase tracking-wider text-[--c-dim]">Stake</div>
+              <div class="font-display text-[18px] mt-0.5">S/ <span id="confirm-stake">10</span></div>
+            </div>
+            <div class="p-3 text-center">
+              <div class="text-[9.5px] font-bold uppercase tracking-wider text-[--c-dim]">Si ganas</div>
+              <div class="font-display text-[18px] mt-0.5 text-[--c-purple]">S/ <span id="confirm-payout">17.50</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Countdown -->
+      <div class="px-4 mt-4">
+        <div class="text-[11px] font-bold uppercase tracking-wider text-[--c-dim] mb-2">Resolución en</div>
+        <div class="grid grid-cols-4 gap-2 text-center">
+          <div class="count-cell"><div class="text-[24px] leading-none" id="cd-d">00</div><div class="text-[9.5px] mt-1 opacity-70 font-sans">DÍAS</div></div>
+          <div class="count-cell"><div class="text-[24px] leading-none" id="cd-h">02</div><div class="text-[9.5px] mt-1 opacity-70 font-sans">HRS</div></div>
+          <div class="count-cell"><div class="text-[24px] leading-none" id="cd-m">14</div><div class="text-[9.5px] mt-1 opacity-70 font-sans">MIN</div></div>
+          <div class="count-cell"><div class="text-[24px] leading-none" id="cd-s">00</div><div class="text-[9.5px] mt-1 opacity-70 font-sans">SEG</div></div>
+        </div>
+        <p class="text-[10.5px] text-[--c-dim] mt-2 text-center">Resuelve <span id="confirm-source" class="font-semibold">ONPE</span> · pago automático al wallet.</p>
+      </div>
+
+      <!-- Share -->
+      <div class="px-4 mt-4">
+        <button class="w-full py-3.5 rounded-2xl border-2 border-[--c-purple] text-[--c-purple] font-bold flex items-center justify-center gap-2 bg-white" onclick="alert('Demo: enlace de reto enviado por WhatsApp')">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 11.5a8.5 8.5 0 1 1-3.5-6.9L21 4l-1.5 4 1.5 3.5z"/></svg>
+          Reta a tu pata
+        </button>
+      </div>
+
+      <!-- Other Salas -->
+      <div class="mt-6 pb-24">
+        <div class="px-4 mb-3 flex items-center justify-between">
+          <h3 class="font-display text-[18px]">Otras Salas para ti</h3>
+          <span class="text-[11px] font-semibold text-[--c-purple] uppercase tracking-wider">Ver todas</span>
+        </div>
+        <div class="px-4 grid gap-3" id="related-grid"></div>
+      </div>
+    </section>
+
+  </div>
+
+  <div class="demo-pill">PROTOTIPO · LOTOBOLA × APUESTAYA</div>
+
+  <script>
+    // ============ DATA ============
+    const SALAS = [
+      { id: 'p1', cat: 'politica', catLabel: 'Política', q: '¿Aprueba el Congreso la reforma esta semana?', filled: 14, si: 7, no: 7, sourcePct: 35, source: 'ONPE', closesIn: '2h 14m', closesMs: 8040000 },
+      { id: 'c1', cat: 'clima',    catLabel: 'Clima',    q: '¿Llueve en Lima este fin de semana?',          filled: 9,  si: 6, no: 3, sourcePct: 60, source: 'SENAMHI', closesIn: '1d 4h', closesMs: 100800000 },
+      { id: 'f1', cat: 'farandula',catLabel: 'Farándula',q: '¿Quién gana El Gran Chef esta noche?',           filled: 18, si: 10, no: 8, sourcePct: 55, source: 'Latina TV', closesIn: '38m', closesMs: 2280000 },
+      { id: 'b1', cat: 'cripto',   catLabel: 'Cripto',   q: '¿Cierra Bitcoin sobre US$ 80K el viernes?',     filled: 12, si: 8, no: 4, sourcePct: 67, source: 'CoinGecko', closesIn: '3d 6h', closesMs: 280800000 },
+      { id: 'm1', cat: 'cultura',  catLabel: 'Cultura',  q: '¿Bad Bunny anuncia gira 2026 en mayo?',         filled: 6,  si: 4, no: 2, sourcePct: 65, source: 'Spotify',   closesIn: '5d', closesMs: 432000000 },
+      { id: 't1', cat: 'tech',     catLabel: 'Tech',     q: '¿Apple presenta nuevo iPad esta semana?',       filled: 11, si: 7, no: 4, sourcePct: 64, source: 'Bloomberg', closesIn: '2d 8h', closesMs: 201600000 },
+      { id: 'e1', cat: 'eventos',  catLabel: 'Eventos',  q: '¿Mistura supera los 100K visitantes este año?', filled: 4,  si: 3, no: 1, sourcePct: 75, source: 'MINCETUR',  closesIn: '12d', closesMs: 1036800000 },
+      { id: 'p2', cat: 'politica', catLabel: 'Política', q: '¿Sube el dólar arriba de S/ 3.80 esta semana?', filled: 17, si: 11, no: 6, sourcePct: 65, source: 'BCR', closesIn: '4h 12m', closesMs: 15120000 },
+      { id: 'f2', cat: 'farandula',catLabel: 'Farándula',q: '¿Eliminan a Pancho en Esto Es Guerra hoy?',     filled: 19, si: 9,  no: 10, sourcePct: 47, source: 'América TV', closesIn: '2h 30m', closesMs: 9000000 },
+      { id: 'p3', cat: 'politica', catLabel: 'Política', q: '¿Aprueba Boluarte > 10% en la próxima encuesta?',filled: 8, si: 2,  no: 6, sourcePct: 25, source: 'IEP',       closesIn: '6d', closesMs: 518400000 },
+    ];
+
+    const RAKE = 0.12;
+    let activeFilter = 'all';
+    let currentSala = null;
+    let selectedStake = 10;
+    let selectedSide = null;
+    let countdownInterval = null;
+
+    // ============ HOME RENDERING ============
+    const grid = document.getElementById('tile-grid');
+    function renderTiles() {
+      const list = activeFilter === 'all' ? SALAS : SALAS.filter(s => s.cat === activeFilter);
+      grid.innerHTML = list.map(s => tileHTML(s)).join('');
+      list.forEach(s => {
+        const el = document.getElementById('tile-' + s.id);
+        if (el) el.addEventListener('click', () => openSala(s.id));
+      });
+      document.getElementById('open-count').textContent = list.length;
+    }
+
+    function tileHTML(s) {
+      const pctFull = Math.round((s.filled / 20) * 100);
+      return `
+        <div class="tile cat-${s.cat}" id="tile-${s.id}">
+          <div class="flex items-start gap-3">
+            <div class="tile-stripe"></div>
+            <div class="flex-1 min-w-0">
+              <div class="flex items-center justify-between mb-1.5">
+                <span class="chip" style="background: var(--cat-bg); color: var(--cat);">${s.catLabel}</span>
+                <span class="text-[10.5px] font-semibold text-[--c-dim] flex items-center gap-1">
+                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
+                  ${s.closesIn}
+                </span>
+              </div>
+              <div class="font-display text-[15.5px] leading-[1.2] text-[--c-ink] mb-3">${s.q}</div>
+              <div class="seats-bar mb-2"><span style="width: ${pctFull}%"></span></div>
+              <div class="flex items-center justify-between text-[11px] font-semibold">
+                <span class="text-[--c-dim]">${s.filled}/20 asientos · S/ 5–20</span>
+                <span class="flex items-center gap-2">
+                  <span class="text-[--c-purple]">SÍ ${s.sourcePct}%</span>
+                  <span class="text-[--c-coral]">NO ${100 - s.sourcePct}%</span>
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>`;
+    }
+
+    // Filter wiring
+    document.querySelectorAll('#filter-row .filter-pill').forEach(p => {
+      p.addEventListener('click', () => {
+        document.querySelectorAll('#filter-row .filter-pill').forEach(x => x.classList.remove('active'));
+        p.classList.add('active');
+        activeFilter = p.dataset.cat;
+        renderTiles();
+      });
+    });
+
+    // ============ NAVIGATION ============
+    function showScreen(id) {
+      document.querySelectorAll('.screen').forEach(s => s.classList.add('hidden-screen'));
+      document.getElementById(id).classList.remove('hidden-screen');
+      document.getElementById(id).scrollTop = 0;
+    }
+    function goHome() {
+      stopCountdown();
+      showScreen('screen-home');
+    }
+    window.goHome = goHome;
+
+    // ============ DETAIL ============
+    function openSala(id) {
+      const s = SALAS.find(x => x.id === id);
+      if (!s) return;
+      currentSala = s;
+      selectedSide = null;
+      selectedStake = 10;
+
+      document.getElementById('detail-cat').textContent = s.catLabel.toUpperCase();
+      document.getElementById('detail-question').textContent = s.q;
+      document.getElementById('detail-closes').textContent = s.closesIn;
+      document.getElementById('detail-source').textContent = s.source;
+      document.getElementById('detail-bettors').textContent = s.filled;
+      document.getElementById('detail-si-pct').textContent = s.sourcePct + '%';
+      document.getElementById('detail-no-pct').textContent = (100 - s.sourcePct) + '%';
+      document.getElementById('detail-odds-bar').style.width = s.sourcePct + '%';
+
+      // seats grid
+      const seatsHTML = [];
+      let drawnSi = 0, drawnNo = 0;
+      for (let i = 0; i < 20; i++) {
+        if (drawnSi < s.si) { seatsHTML.push('<div class="seat-dot filled-si"></div>'); drawnSi++; }
+        else if (drawnNo < s.no) { seatsHTML.push('<div class="seat-dot filled-no"></div>'); drawnNo++; }
+        else { seatsHTML.push('<div class="seat-dot empty"></div>'); }
+      }
+      document.getElementById('seats-grid').innerHTML = seatsHTML.join('');
+      document.getElementById('seats-si').textContent = s.si;
+      document.getElementById('seats-no').textContent = s.no;
+      document.getElementById('seats-free').textContent = 20 - s.filled;
+
+      // reset stake to 10
+      document.querySelectorAll('#stake-row .stake-chip').forEach(c => {
+        c.classList.toggle('active', Number(c.dataset.stake) === 10);
+      });
+      // reset side
+      document.getElementById('btn-si').classList.remove('btn-active-si');
+      document.getElementById('btn-no').classList.remove('btn-active-no');
+      const cb = document.getElementById('btn-confirm');
+      cb.disabled = true;
+      cb.textContent = 'Elige un lado para apostar';
+
+      updatePayout();
+      showScreen('screen-detail');
+    }
+
+    function updatePayout() {
+      if (!currentSala) return;
+      const pct = selectedSide === 'no' ? (100 - currentSala.sourcePct) : currentSala.sourcePct;
+      // Payout = stake + (stake * (loserShare / winnerShare) * (1 - rake))
+      // Simplified illustrative implied multiplier:
+      let multiplier = pct === 0 ? 1 : Math.max(1.05, ((100 / pct) * (1 - RAKE)));
+      if (!selectedSide) multiplier = (100 / currentSala.sourcePct) * (1 - RAKE);
+      const payout = (selectedStake * multiplier).toFixed(2);
+      document.getElementById('detail-payout').textContent = payout;
+      document.getElementById('detail-multiplier').textContent = multiplier.toFixed(2) + 'x';
+    }
+
+    // Stake wiring
+    document.querySelectorAll('#stake-row .stake-chip').forEach(c => {
+      c.addEventListener('click', () => {
+        document.querySelectorAll('#stake-row .stake-chip').forEach(x => x.classList.remove('active'));
+        c.classList.add('active');
+        selectedStake = Number(c.dataset.stake);
+        updatePayout();
+      });
+    });
+
+    function pickSide(side) {
+      selectedSide = side;
+      const si = document.getElementById('btn-si');
+      const no = document.getElementById('btn-no');
+      si.classList.toggle('btn-active-si', side === 'si');
+      no.classList.toggle('btn-active-no', side === 'no');
+      const cb = document.getElementById('btn-confirm');
+      cb.disabled = false;
+      cb.textContent = `Confirmar reto · S/ ${selectedStake} a ${side === 'si' ? 'SÍ' : 'NO'}`;
+      updatePayout();
+    }
+    window.pickSide = pickSide;
+
+    function placeBet() {
+      if (!currentSala || !selectedSide) return;
+
+      // Update wallet balance
+      const bal = document.getElementById('balance');
+      const newBal = (parseFloat(bal.textContent) - selectedStake).toFixed(2);
+      bal.textContent = newBal;
+
+      // Confirm screen
+      document.getElementById('confirm-cat').textContent = currentSala.catLabel.toUpperCase();
+      document.getElementById('confirm-question').textContent = currentSala.q;
+      document.getElementById('confirm-side').textContent = selectedSide === 'si' ? 'SÍ' : 'NO';
+      document.getElementById('confirm-side').style.color = selectedSide === 'si' ? '#4D8800' : 'var(--c-coral)';
+      document.getElementById('confirm-stake').textContent = selectedStake;
+      document.getElementById('confirm-source').textContent = currentSala.source;
+
+      const pct = selectedSide === 'no' ? (100 - currentSala.sourcePct) : currentSala.sourcePct;
+      const multiplier = pct === 0 ? 1 : Math.max(1.05, ((100 / pct) * (1 - RAKE)));
+      document.getElementById('confirm-payout').textContent = (selectedStake * multiplier).toFixed(2);
+
+      startCountdown(currentSala.closesMs);
+      renderRelated();
+      showScreen('screen-confirm');
+    }
+    window.placeBet = placeBet;
+
+    // ============ COUNTDOWN ============
+    function startCountdown(ms) {
+      stopCountdown();
+      let remaining = ms;
+      function paint() {
+        const d = Math.floor(remaining / 86400000);
+        const h = Math.floor((remaining % 86400000) / 3600000);
+        const m = Math.floor((remaining % 3600000) / 60000);
+        const sec = Math.floor((remaining % 60000) / 1000);
+        document.getElementById('cd-d').textContent = String(d).padStart(2, '0');
+        document.getElementById('cd-h').textContent = String(h).padStart(2, '0');
+        document.getElementById('cd-m').textContent = String(m).padStart(2, '0');
+        document.getElementById('cd-s').textContent = String(sec).padStart(2, '0');
+      }
+      paint();
+      countdownInterval = setInterval(() => {
+        remaining = Math.max(0, remaining - 1000);
+        paint();
+        if (remaining <= 0) stopCountdown();
+      }, 1000);
+    }
+    function stopCountdown() { if (countdownInterval) { clearInterval(countdownInterval); countdownInterval = null; } }
+
+    // ============ RELATED (confirmation page) ============
+    function renderRelated() {
+      const others = SALAS.filter(s => s.id !== currentSala.id).slice(0, 3);
+      document.getElementById('related-grid').innerHTML = others.map(s => tileHTML(s)).join('');
+      others.forEach(s => {
+        const el = document.getElementById('tile-' + s.id);
+        if (el) el.addEventListener('click', () => openSala(s.id));
+      });
+    }
+
+    // ============ INIT ============
+    renderTiles();
+  </script>
+</body>
+</html>
