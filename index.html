@@ -503,7 +503,7 @@
       { id: 'c1', cat: 'clima',    catLabel: 'Clima',    q: '¿Llueve en Lima este fin de semana?',          filled: 9,  si: 6, no: 3, sourcePct: 60, source: 'SENAMHI', closesIn: '1d 4h', closesMs: 100800000, live: 'weather' },
       { id: 'f1', cat: 'farandula',catLabel: 'Farándula',q: '¿Quién gana El Gran Chef esta noche?',           filled: 18, si: 10, no: 8, sourcePct: 55, source: 'Latina TV', closesIn: '38m', closesMs: 2280000 },
       { id: 'b1', cat: 'cripto',   catLabel: 'Cripto',   q: '¿Cierra Bitcoin sobre US$ 80K el viernes?',     filled: 12, si: 8, no: 4, sourcePct: 67, source: 'CoinGecko', closesIn: '3d 6h', closesMs: 280800000, live: 'btc', strike: 80000 },
-      { id: 'm1', cat: 'cultura',  catLabel: 'Cultura',  q: '¿Bad Bunny anuncia gira 2026 en mayo?',         filled: 6,  si: 4, no: 2, sourcePct: 65, source: 'Spotify',   closesIn: '5d', closesMs: 432000000 },
+      { id: 'm1', cat: 'cultura',  catLabel: 'Cultura',  q: '¿Bad Bunny anuncia gira 2026 en mayo?',         filled: 6,  si: 4, no: 2, sourcePct: 65, source: 'Spotify',   closesIn: '5d', closesMs: 432000000, live: 'wiki', wikiPage: 'Bad_Bunny', wikiLabel: 'Bad Bunny' },
       { id: 't1', cat: 'tech',     catLabel: 'Tech',     q: '¿Apple presenta nuevo iPad esta semana?',       filled: 11, si: 7, no: 4, sourcePct: 64, source: 'Bloomberg', closesIn: '2d 8h', closesMs: 201600000 },
       { id: 'e1', cat: 'eventos',  catLabel: 'Eventos',  q: '¿Mistura supera los 100K visitantes este año?', filled: 4,  si: 3, no: 1, sourcePct: 75, source: 'MINCETUR',  closesIn: '12d', closesMs: 1036800000 },
       { id: 'p2', cat: 'politica', catLabel: 'Política', q: '¿Sube el dólar arriba de S/ 3.80 esta semana?', filled: 17, si: 11, no: 6, sourcePct: 65, source: 'BCR', closesIn: '4h 12m', closesMs: 15120000, live: 'fx', strike: 3.80 },
@@ -512,7 +512,7 @@
     ];
 
     // ============ LIVE DATA (real public APIs, no key needed) ============
-    const liveCache = { btc: null, weather: null, fx: null, fetchedAt: {} };
+    const liveCache = { btc: null, weather: null, fx: null, wiki: null, fetchedAt: {} };
 
     function fmtUSD(n) { return '$' + n.toLocaleString('en-US', { maximumFractionDigits: 0 }); }
     function fmtPEN(n) { return 'S/ ' + n.toFixed(3); }
@@ -579,6 +579,36 @@
       paintLive();
     }
 
+    async function fetchWiki() {
+      // Pulls last 14 days of Spanish-Wikipedia pageviews for tracked pages.
+      // Wikimedia API: open, no key, CORS-permissive. Used as a "buzz" signal
+      // for farándula / cultura Salas (e.g., is X being searched more than usual?).
+      const wikiSalas = SALAS.filter(s => s.live === 'wiki');
+      if (!wikiSalas.length) return;
+      try {
+        const end = new Date(Date.now() - 86400000); // yesterday (today not yet aggregated)
+        const start = new Date(end.getTime() - 13 * 86400000);
+        const fmt = d => d.getUTCFullYear() + String(d.getUTCMonth() + 1).padStart(2, '0') + String(d.getUTCDate()).padStart(2, '0');
+        const out = {};
+        await Promise.all(wikiSalas.map(async s => {
+          const url = `https://wikimedia.org/api/rest_v1/metrics/pageviews/per-article/es.wikipedia/all-access/all-agents/${encodeURIComponent(s.wikiPage)}/daily/${fmt(start)}/${fmt(end)}`;
+          const r = await fetch(url);
+          if (!r.ok) throw new Error('wiki ' + r.status + ' for ' + s.wikiPage);
+          const d = await r.json();
+          const days = (d.items || []).map(it => ({ date: it.timestamp.slice(0,8), views: it.views }));
+          const last7 = days.slice(-7);
+          const prev7 = days.slice(-14, -7);
+          const sumLast = last7.reduce((a,b) => a + b.views, 0);
+          const sumPrev = prev7.reduce((a,b) => a + b.views, 0) || 1;
+          const change = ((sumLast - sumPrev) / sumPrev) * 100;
+          out[s.wikiPage] = { days, last7, sum7d: sumLast, change7d: change, prevSum: sumPrev };
+        }));
+        liveCache.wiki = out;
+        liveCache.fetchedAt.wiki = Date.now();
+      } catch (e) { console.warn('Wiki fetch failed', e); liveCache.wiki = { error: true }; }
+      paintLive();
+    }
+
     function paintLive() {
       // Repaint home tiles (live tickers)
       SALAS.forEach(s => {
@@ -604,6 +634,12 @@
       }
       if (s.live === 'fx' && liveCache.fx && !liveCache.fx.error) {
         return `<span class="live-badge"><span class="live-dot"></span>USD/PEN ${fmtPEN(liveCache.fx.usdPen)}</span>`;
+      }
+      if (s.live === 'wiki' && liveCache.wiki && !liveCache.wiki.error && liveCache.wiki[s.wikiPage]) {
+        const w = liveCache.wiki[s.wikiPage];
+        const arrow = w.change7d >= 0 ? '▲' : '▼';
+        const col = w.change7d >= 0 ? '#4D8800' : 'var(--c-coral)';
+        return `<span class="live-badge"><span class="live-dot"></span>${(w.sum7d / 1000).toFixed(1)}K búsquedas 7d</span> <span style="color:${col}; font-weight:700; font-size:10.5px;">${arrow} ${Math.abs(w.change7d).toFixed(0)}%</span>`;
       }
       return ''; // loading or error
     }
@@ -668,6 +704,31 @@
               : `Faltan S/ ${(s.strike - data.usdPen).toFixed(3)} para cruzar el strike.`}
           </div>
           <div class="text-[11px] opacity-60 mt-3">Tipo de cambio referencial · cierre ${data.asOf}</div>`;
+      }
+      if (s.live === 'wiki') {
+        src.textContent = 'Wikipedia · ' + fmtAgo(fetchedAt);
+        if (!data) { body.innerHTML = '<div class="skeleton h-[26px] w-[60%] mb-2">.</div><div class="skeleton h-[14px] w-[40%]">.</div>'; return; }
+        if (data.error) { body.innerHTML = `<div class="text-[13px] opacity-80">No se pudo cargar señal de búsquedas.</div>`; return; }
+        const w = data[s.wikiPage];
+        if (!w || !w.days.length) { body.innerHTML = `<div class="text-[13px] opacity-80">Sin datos de búsquedas para "${s.wikiLabel}".</div>`; return; }
+        const max = Math.max(...w.days.map(x => x.views));
+        const arrow = w.change7d >= 0 ? '▲' : '▼';
+        const chCol = w.change7d >= 0 ? '#C8FF00' : '#FF6188';
+        const bars = w.days.map((day, i) => {
+          const h = max ? Math.max(2, Math.round((day.views / max) * 36)) : 2;
+          const isLast7 = i >= w.days.length - 7;
+          const c = isLast7 ? '#C8FF00' : 'rgba(200,255,0,0.35)';
+          return `<div style="display:inline-block; width:6px; height:${h}px; background:${c}; border-radius:2px; margin-right:2px; vertical-align:bottom;" title="${day.date}: ${day.views.toLocaleString()} vistas"></div>`;
+        }).join('');
+        body.innerHTML = `
+          <div class="flex items-baseline gap-2">
+            <div class="num text-[26px] leading-none">${(w.sum7d / 1000).toFixed(1)}K</div>
+            <div class="text-[12px] opacity-70">vistas · 7d</div>
+            <div style="margin-left:auto; color:${chCol}; font-weight:700; font-size:13px;">${arrow} ${Math.abs(w.change7d).toFixed(0)}%</div>
+          </div>
+          <div class="mt-3" style="height:38px; line-height:0;">${bars}</div>
+          <div class="text-[11px] opacity-70 mt-2">14 días · Wikipedia ES "${s.wikiLabel}". Verde claro = últimos 7 días.</div>
+          <div class="text-[11px] opacity-60 mt-1">${w.change7d >= 15 ? 'Buzz fuerte: a menudo precede anuncios.' : w.change7d <= -15 ? 'Buzz cayendo: menos atención esta semana.' : 'Buzz estable.'}</div>`;
       }
     }
 
@@ -792,10 +853,12 @@
         renderLiveDetail(s);
         // Refresh from API in case cache is stale (>60s)
         const fa = liveCache.fetchedAt[s.live] || 0;
-        if (Date.now() - fa > 60000) {
+        const stale = s.live === 'wiki' ? 30 * 60 * 1000 : 60000;
+        if (Date.now() - fa > stale) {
           if (s.live === 'btc') fetchBTC();
           else if (s.live === 'weather') fetchWeather();
           else if (s.live === 'fx') fetchFX();
+          else if (s.live === 'wiki') fetchWiki();
         }
       } else {
         liveWrap.classList.add('hidden');
@@ -905,14 +968,19 @@
     if (SALAS.some(s => s.live === 'btc'))     fetchBTC();
     if (SALAS.some(s => s.live === 'weather')) fetchWeather();
     if (SALAS.some(s => s.live === 'fx'))      fetchFX();
+    if (SALAS.some(s => s.live === 'wiki'))    fetchWiki();
 
-    // Refresh tickers every 90s while the page is open
+    // Refresh tickers every 90s while the page is open (wiki: every 30min)
     setInterval(() => {
       if (document.hidden) return;
       if (SALAS.some(s => s.live === 'btc'))     fetchBTC();
       if (SALAS.some(s => s.live === 'weather')) fetchWeather();
       if (SALAS.some(s => s.live === 'fx'))      fetchFX();
     }, 90000);
+    setInterval(() => {
+      if (document.hidden) return;
+      if (SALAS.some(s => s.live === 'wiki'))    fetchWiki();
+    }, 30 * 60 * 1000);
   </script>
 </body>
 </html>
